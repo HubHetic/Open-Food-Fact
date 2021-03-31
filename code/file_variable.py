@@ -3,7 +3,7 @@ import os
 path = os.path.realpath(__file__)
 
 PATH_DATA = "../data"
-PATH_dATA_IMAGE = PATH_DATA + "/image"
+PATH_DATA_IMAGE = PATH_DATA + "/image"
 PATH_DATA_VECTEUR = PATH_DATA + "/vecteur"
 PATH_DATA_VECTEUR_FILE = PATH_DATA_VECTEUR + "/vector.csv"
 PATH_DATA_CNN = PATH_DATA + "/CNN"

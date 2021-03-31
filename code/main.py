@@ -1,10 +1,12 @@
-from code.cnn_file import image_to_vector
-from code.knn_file import find_similar_vector_id
-from code.db_vecteur import find_code
-from code.db_image import find_image
-from code.db_produit import find_line
+from cnn_file import image_to_vector
+from knn_file import find_similar_vector_id
+from db_vecteur import find_code
+from db_image import find_image
+from db_produit import find_line
 import pandas as pd
-
+import os
+from file_variable import *
+import shutil
 
 def image_to_code(image):
     """returns the id of a similar image in the variable image
@@ -35,11 +37,31 @@ def image_to_line_data(image):
     return line
 
 
-def all_implement():
+def all_implement(path_image):
     """setting up all the folders, files, database for the production,
         training of CNN, KNN
+
+        Args: 
+        path_image (str): chemin absolu vers le dossier des images que l'on veut rentrer 
+        dans le modèle
     """
-    pass
+    print('coucou0')
+
+    if os.path.exists(path_image):
+        print('coucou1')
+        if not os.path.exists(PATH_DATA):
+            print('coucou2')
+            os.mkdir(PATH_DATA)
+            os.mkdir(PATH_DATA_IMAGE)
+            os.mkdir(PATH_DATA_VECTEUR)
+            os.mkdir(PATH_DATA_CNN)
+            os.mkdir(PATH_DATA_CNN_TRAIN)
+            os.mkdir(PATH_DATA_CNN_TEST)
+            os.mkdir(PATH_DATA_KNN)
+
+            shutil.move(path_image, PATH_DATA_IMAGE)
+    else: 
+        raise IOError("Ce dossier n'existe pas ! ")
 
 
 def set_up_model(type_model, name_model):

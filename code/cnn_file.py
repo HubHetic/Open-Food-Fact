@@ -1,5 +1,15 @@
-from code.db_image import *
+from db_image import *
 import numpy as np
+import keras
+import gzip
+
+from keras.layers import Input,Conv2D,MaxPooling2D,UpSampling2D
+from keras.models import Model
+from keras.optimizers import RMSprop
+
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.vgg16 import preprocess_input,decode_predictions
+from keras.applications.vgg16 import VGG16
 
 
 def image_to_vector(image):
@@ -68,5 +78,5 @@ def charge_model(PATH_file_model):
     Returns:
         Object: model object
     """
-    model = "CNN"
+    model = VGG16(weights='imagenet')
     return model

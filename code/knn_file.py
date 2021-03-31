@@ -14,19 +14,31 @@ def find_similar_vector(vector):
     return vector
 
 
-def find_similar_vector_id(vecteur, nb_id):
+def find_similar_vector_id(vecteur, nb_id, liste_tuples_id_vecteurs, modele):
     """returns a list of id's corresponding to the nb_id of similar vectors
 
     Args:
         vecteur (numpy Array): vector with one line, result of the CNN model
         nb_id (int): desired id number, error if nb_id = 0
+        liste_tuples_id_vecteurs (tuple) : nom de la photo et son vecteur
+        modele (objet) : modèle utilisé
 
     Returns:
         list(int): list of id image
     """
-    id = [1, 2, 4, 5, 6, 8]
-    return id
+    return knn(vecteur, liste_tuples_id_vecteurs)
 
+
+# Permet de trouver le vecteur le plus proche de celui passé en paramètre parmi ceux de la bdd
+
+def calcul_distance(vecteur1, vecteur2):
+  return sum((vecteur1 - vecteur2)**2)
+
+
+def knn(vecteur, liste_tuples_id_vecteurs):
+  
+  liste = [calcul_distance(x[1], vecteur[1]) for x in liste_tuples_id_vecteurs]
+  return liste_tuples_id_vecteurs[liste.index(min(liste))][0]
 
 def test_performance_model(model):
     """displays the performance of the model with different metrics, using graphs
