@@ -1,15 +1,13 @@
-from db_image import *
 import numpy as np
 import keras
 import gzip
-
-from keras.layers import Input,Conv2D,MaxPooling2D,UpSampling2D
+from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 from keras.optimizers import RMSprop
-
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.vgg16 import preprocess_input,decode_predictions
+from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
 from keras.applications.vgg16 import VGG16
+from db_image import *
 
 
 def image_to_vector(image):
@@ -19,7 +17,7 @@ def image_to_vector(image):
         image (Image Object):
 
     Returns:
-        numpy Array: vector corresponding to the last layer of the CNN 
+        numpy Array: vector corresponding to the last layer of the CNN
     """
     return np.array([1, 2, 3, 4, 5, 6])
 
