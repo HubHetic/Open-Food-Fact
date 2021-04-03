@@ -1,5 +1,21 @@
-import numpy as np
+# ========================================
+# IMPORT
+# ========================================
+import pandas as pd
+from sklearn.cluster import KMeans
+from file_variable import PATH_DATA_VECTEUR_FILE
+from sklearn.neighbors import NearestNeighbors
+# =======================================
+# VARIABLE GLOBAL
+# =======================================
+MODEL_KNN = ''
+DF_VECTOR = ''
+# =======================================
+# FONCTIONS
+# =======================================
 
+
+# TODO changer construction des KNN et CNN en classe d'objet
 
 def find_similar_vector(vector):
     """return the vector of the similar image
@@ -10,11 +26,11 @@ def find_similar_vector(vector):
     Returns:
         numpy Array: vector of the similar image in the vector database
     """
-    vector = np.array([1, 2, 3, 4, 5, 6])
-    return vector
+    neighboors = MODEL_KNN.kneighbors(vector)
+    return neighboors
 
 
-def find_similar_vector_id(vecteur, nb_id, liste_tuples_id_vecteurs, modele):
+def find_similar_vector_id(vecteur, nb_id):
     """returns a list of id's corresponding to the nb_id of similar vectors
 
     Args:
@@ -24,21 +40,24 @@ def find_similar_vector_id(vecteur, nb_id, liste_tuples_id_vecteurs, modele):
         modele (objet) : modèle utilisé
 
     Returns:
-        list(int): list of id image
+        list(str): list of id image
     """
-    return knn(vecteur, liste_tuples_id_vecteurs)
+    return [""]
 
 
-# Permet de trouver le vecteur le plus proche de celui passé en paramètre parmi ceux de la bdd
-
+# Permet de trouver le vecteur le plus proche de celui passé en paramètre
+# parmi ceux de la bdd
+"""
 def calcul_distance(vecteur1, vecteur2):
-  return sum((vecteur1 - vecteur2)**2)
+    return sum((vecteur1 - vecteur2)**2)
 
 
 def knn(vecteur, liste_tuples_id_vecteurs):
-  
-  liste = [calcul_distance(x[1], vecteur[1]) for x in liste_tuples_id_vecteurs]
-  return liste_tuples_id_vecteurs[liste.index(min(liste))][0]
+    liste = [calcul_distance(x[1], vecteur[1]) for x in
+    liste_tuples_id_vecteurs]
+    return liste_tuples_id_vecteurs[liste.index(min(liste))][0]
+"""
+
 
 def test_performance_model(model):
     """displays the performance of the model with different metrics, using graphs
@@ -49,7 +68,7 @@ def test_performance_model(model):
     pass
 
 
-def train_model(nb_image, hp_model):
+def train_model(nb_vecteur, hp_model):
     """train model cnn with its hyperparameters
 
     Args:
@@ -59,8 +78,9 @@ def train_model(nb_image, hp_model):
     Returns:
         Object model: model train
     """
-    model = "CNN"
-    return model
+    x = DF_VECTOR.drop(['code'])
+    MODEL_KNN.fit(x)
+    return MODEL_KNN
 
 
 def create_model(summary_model):
@@ -85,7 +105,7 @@ def save_model(model):
     pass
 
 
-def charge_model(PATH_file_model):
+def charge_model_cluster(PATH_file_model):
     """loads the model with these parameters into a file
 
     Args:
@@ -94,4 +114,7 @@ def charge_model(PATH_file_model):
     Returns:
         Object: model object
     """
-    return "model"
+    global MODEL_KNN, DF_VECTOR
+    DF_VECTOR = pd.read_csv(PATH_DATA_VECTEUR_FILE)
+    MODEL_CNN = NearestNeighbors(n_clusters=2, random_state=0)
+    return MODEL_CNN

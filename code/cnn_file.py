@@ -1,16 +1,34 @@
+# =======================================
+# IMPORT
+# =======================================
+
 import numpy as np
-import keras
 import gzip
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 from keras.optimizers import RMSprop
-from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
 from keras.applications.vgg16 import VGG16
-from db_image import *
+
+# =======================================
+# DEPENDANCE
+# =======================================
+
+from db_vecteur import function_last_layers, image_vecteur_CNN
+from db_image import changer_format
+
+# =======================================
+# VARIABLE GLOBAL
+# =======================================
+
+MODEL = ''
+
+# =======================================
+
+# =======================================
 
 
-def image_to_vector(image):
+def image_to_vector(path_image):
     """converts the parameter image to a vector
 
     Args:
@@ -19,7 +37,11 @@ def image_to_vector(image):
     Returns:
         numpy Array: vector corresponding to the last layer of the CNN
     """
-    return np.array([1, 2, 3, 4, 5, 6])
+    format = (224, 224)
+    image = changer_format(path_image, format)
+    func = function_last_layers(MODEL)
+    vector = image_vecteur_CNN(func, image)
+    return vector
 
 
 def test_performance_model(model):
@@ -76,5 +98,6 @@ def charge_model(PATH_file_model):
     Returns:
         Object: model object
     """
-    model = VGG16(weights='imagenet')
-    return model
+    global MODEL
+    MODEL = VGG16(weights='imagenet')
+    return MODEL
