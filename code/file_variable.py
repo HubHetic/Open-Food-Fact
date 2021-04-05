@@ -17,8 +17,6 @@ PATH_DATA_CNN_TRAIN = PATH_DATA_CNN + "/TRAIN"
 PATH_DATA_CNN_TEST = PATH_DATA_CNN + "/TEST"
 
 PATH_DATA_KNN = PATH_DATA + "/KNN"
-PATH_DATA_CNN_TRAIN
-PATH_DATA_CNN_TEST
 
 # ===========================================
 # CHEMIN DES FICHIERS
@@ -51,7 +49,7 @@ def implement(path_image):
         os.mkdir(PATH_DATA_KNN)
     if path_image == '':
         return None
-    if os.path.exists(path_image):
+    elif os.path.exists(path_image):
         lis_img = os.listdir(path_image)
         for im in lis_img:
             shutil.move(path_image + "/" + im, PATH_DATA_IMAGE)

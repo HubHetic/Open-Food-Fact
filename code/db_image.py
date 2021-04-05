@@ -1,8 +1,8 @@
-import keras
-import os
+from PIL import Image, ImageFilter
 import numpy as np
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
+from file_variable import PATH_DATA_IMAGE
 
 
 def changer_format(path_image, format):
@@ -22,24 +22,12 @@ def changer_format(path_image, format):
     return img_prep
 
 
-def move_example(path_image, new_path, number_image, random_state):
-    pass
-
-
-def remove_database(path_database, nb_image):
-    pass
-
-
-def create_path(path):
-    pass
-
-
 def find_image(code_image):
-    image = "image"
+    image = Image.open(PATH_DATA_IMAGE + code_image + 'jpg')
     return image
 
 
-def changer_format_folder(bin_path):
+def changer_format_folder(list_image, format):
     """préprocess toutes les images d'un dossier
 
     Args:
@@ -51,9 +39,10 @@ def changer_format_folder(bin_path):
 
     liste_img_prep = []
     FORMAT = (224, 224)
-    list_image = os.listdir(bin_path)[0:50]
-    print(list_image)
     for img in list_image:
-        path = bin_path + "/" + img
-        liste_img_prep.append(changer_format(path, FORMAT))
+        path = PATH_DATA_IMAGE + "/" + img
+        try:
+            liste_img_prep.append(changer_format(path, FORMAT))
+        except:
+            continue
     return liste_img_prep, list_image
