@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from file_variable import PATH_DATA_VECTEUR_FILE
 from sklearn.neighbors import NearestNeighbors
+from heapq import nsmallest
 # =======================================
 # VARIABLE GLOBAL
 # =======================================
@@ -16,6 +17,55 @@ DF_VECTOR = ''
 
 
 # TODO changer construction des KNN et CNN en classe d'objet
+
+
+#class knn, permet d'import un objet contenant les méthodes lié a un knn utilisable pour des vectors d'images
+from heapq import nsmallest
+#class knn, permet d'import un objet contenant les méthodes lié a un knn utilisable pour des vectors d'images
+class class_knn :
+  def __init__(self, nb_voisins, model_knn, vecteur_image, df_vector):
+    self.model_knn = model_knn
+    self.nb_voisins = nb_voisins
+    self.vecteur = vecteur_image
+    self.df_vecteur = panda.read_csv(PATH_DATA_VECTEUR)  #a_verif
+
+
+  def calcul_distance(self,  vecteur1): 
+    """take the vector of the image we are looking for
+        take our dataframe of vector directly calculates the distances
+        
+
+    Var :   
+         vecteur1 : vector of the image we are playing with       
+
+
+    Args:
+        code : we are soustracting  also the code in (self.df_vecteur - vecteur1)**2, it will also affect code
+    So we stock it and replace it 
+
+    """
+    code = self.df_vecteur['code'] #applique le calcul de distance sur code aussi
+    self.df_vecteur = (self.df_vecteur - vecteur1)**2
+    self.df_vecteur['code'] = code
+    self.df_vecteur['distance'] = 0
+    for i in self.df_vecteur.columns: 
+      if i!= 'code' and i!= 'distance' :
+        self.df_vecteur['distance'] = self.df_vecteur['distance'] + self.df_vecteur[i]
+    #return 
+
+
+  def calcul_knn(self):    # no need call liste_tuples_id_vecteurs dans l'appel de la fonction vu que var global
+        """recuperer les n plus petites distances dans le df
+     et renvoies les n codes associé au n plus petites distances
+
+    
+        return liste de 'code'
+        """ 
+        min_distance = nsmallest(self.nb_voisins , self.df_vecteur['distance'])
+        return self.df_vecteur['code'].loc[self.df_vecteur['distance'].isin(min_distance)]
+
+
+
 
 def find_similar_vector(vector):
     """return the vector of the similar image
@@ -105,7 +155,7 @@ def save_model(model):
     pass
 
 
-def charge_model_cluster(PATH_file_model):
+def charge_model(self, PATH_file_model='', name_model=''):
     """loads the model with these parameters into a file
 
     Args:
@@ -118,3 +168,6 @@ def charge_model_cluster(PATH_file_model):
     DF_VECTOR = pd.read_csv(PATH_DATA_VECTEUR_FILE)
     MODEL_CNN = NearestNeighbors(n_clusters=2, random_state=0)
     return MODEL_CNN
+
+
+ 
