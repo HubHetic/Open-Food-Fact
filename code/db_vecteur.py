@@ -7,10 +7,10 @@ import pandas as pd
 from keras import backend as bk
 from file_variable import PATH_DATA_VECTEUR_FILE
 
-
 # ===========================================
 # FONCTION
 # ===========================================
+
 
 def image_vecteur_CNN(func, image):
     return func(image)[0][0]
@@ -27,7 +27,7 @@ def new_list_vecteur_bdd(model_cnn, liste_images, list_names):
     dans liste_images
     """
     func = function_last_layers(model_cnn)
-    vector_list = np.array([image_vecteur_CNN(func, img) for img in liste_images])
+    vector_list = np.array([image_vecteur_CNN(func, x) for x in liste_images])
     liste_code = list(map(lambda x: x[:-4], list_names))
     df = create_dataframe_vector(vector_list, liste_code)
     save_base_vector(df, PATH_DATA_VECTEUR_FILE)
@@ -53,4 +53,4 @@ def create_dataframe_vector(vector_list, liste_code):
 
 
 def save_base_vector(pointeur_bd_vecteur, path_save):
-    pointeur_bd_vecteur.to_csv(path_save)
+    pointeur_bd_vecteur.to_csv(path_save, index=False)

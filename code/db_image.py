@@ -1,4 +1,4 @@
-from PIL import Image, ImageFilter
+from PIL import Image
 import numpy as np
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
@@ -23,7 +23,7 @@ def changer_format(path_image, format):
 
 
 def find_image(code_image):
-    image = Image.open(PATH_DATA_IMAGE + code_image + 'jpg')
+    image = Image.open(PATH_DATA_IMAGE + '/' + code_image + '.jpg')
     return image
 
 

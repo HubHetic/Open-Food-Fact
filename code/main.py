@@ -3,15 +3,19 @@
 # ===========================================
 from PIL import Image
 import os
+import numpy as np
 import random
 import time
+from matplotlib.pyplot import imshow
 from cnn_file import CNN
+from knn_file import class_knn
 # from Knn_file import class_knn
 from db_vecteur import find_code, new_list_vecteur_bdd
 from db_image import changer_format_folder, find_image
 from db_produit import find_line
 from file_variable import implement
 from file_variable import PATH_DATA_IMAGE
+from db_image import changer_format
 
 
 # ===========================================
@@ -24,7 +28,7 @@ MODEL_KNN = ''
 # ===========================================
 
 
-def image_to_code(path_image, nb_image):
+def image_to_images(path_image, nb_image):
     """returns the id of a similar image in the variable image
 
     Args:
@@ -33,22 +37,25 @@ def image_to_code(path_image, nb_image):
     Returns:
         int: id code of the image in the databases
     """
-    vec = MODEL_CNN.image_to_vector(path_image)
-    list_id = MODEL_KNN.find_similar_vector_id(vec, nb_image)
-    # code = find_code(vec_sim)
+    list_id = image_to_code(path_image, nb_image)
     list_image = [find_image(code) for code in list_id]
     return list_image
 
 
+def image_to_code(path_image, nb_image):
+    vec = MODEL_CNN.image_to_vector(path_image)
+    return MODEL_KNN.find_similar_vector_id(vec, nb_image)
+
+
 def show_image(path_image, nb_image):
-    image_a_trouver = Image.open(path_image)
     print("=============================")
     print(f"image a trouver {path_image.split(',')[-1]}")
-    image_a_trouver.show()
-    list_image_found = image_to_code(path_image, nb_image)
+    vect = changer_format(path_image, (224, 224))[0]
+    imshow(vect)
+    list_image_found = image_to_images(path_image, nb_image)
     print("image trouve")
     for img in list_image_found:
-        img.show()
+        imshow(changer_format(path_image, (224, 224))[0])
 
 
 def image_to_line_data(image):
@@ -71,7 +78,7 @@ def all_implement(path_image, build_model=False):
         global MODEL_CNN, MODEL_KNN
         MODEL_CNN = CNN()
         MODEL_CNN.charge_model()
-        # MODEL_KNN = class_knn()
+        MODEL_KNN = class_knn()
 
 
 def set_up_model(type_model, name_model):
@@ -95,7 +102,8 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
 
     Args:
         train (bool, optional): train model if it's true. Defaults to False.
-        nb_image (int, optional): choice nb image for train if !=0. Defaults to 0.
+        nb_image (int, optional): choice nb image for train if !=0. Defaults
+        to 0.
     """
     if verbose:
         print("=========================")
@@ -105,7 +113,7 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         liste_images = os.listdir(PATH_DATA_IMAGE)
     else:
         liste_images = os.listdir(PATH_DATA_IMAGE)
-        random.shuffle(liste_images)
+        # random.shuffle(liste_images)
         liste_images = liste_images[0:nb_image]
     if verbose:
         tps2 = time.time()
@@ -130,6 +138,7 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
+    list_images_prep = tuple(list_images_prep)
     liste_vecteur = new_list_vecteur_bdd(MODEL_CNN.MODEL, list_images_prep,
                                          list_names)
     if verbose:
