@@ -40,10 +40,6 @@ def new_vecteur_to_database(liste_vecteur, liste_name):
     return np.array(couple)
 
 
-def find_code(df, vecteur):
-    return 2
-
-
 def create_dataframe_vector(vector_list, liste_code):
     nb_columns = vector_list.shape[1]
     list_columns = ['vector' + str(i) for i in range(nb_columns)]

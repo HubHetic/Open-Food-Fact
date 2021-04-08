@@ -1,7 +1,6 @@
-from PIL import Image
 import numpy as np
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
+from tensorflow.keras.applications.vgg16 import preprocess_input
 from file_variable import PATH_DATA_IMAGE
 
 
@@ -23,15 +22,15 @@ def changer_format(path_image, format):
 
 
 def find_image(code_image):
-    image = Image.open(PATH_DATA_IMAGE + '/' + code_image + '.jpg')
-    return image
+    path_image = PATH_DATA_IMAGE + '/' + code_image + '.jpg'
+    return path_image
 
 
-def changer_format_folder(list_image, format):
-    """préprocess toutes les images d'un dossier
+def changer_format_image_folder(list_image, format):
+    """préprocess toutes les images
 
     Args:
-        bin_path (str): chemin du dossier
+        list_image list(str): liste des nom d'image
 
     Returns:
         [liste]: liste de np array des images du dossier préprocess

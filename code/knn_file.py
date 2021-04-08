@@ -2,11 +2,9 @@
 # IMPORT
 # ========================================
 import pandas as pd
-from sklearn.cluster import KMeans
 from file_variable import PATH_DATA_VECTEUR_FILE
 from sklearn.neighbors import NearestNeighbors
 from heapq import nsmallest
-from file_variable import PATH_DATA_VECTEUR
 # =======================================
 # FONCTIONS
 # =======================================
@@ -58,20 +56,9 @@ class class_knn:
         et renvoies les n codes associé au n plus petites distances
         return liste de 'code'
         """
-        
         min_distance = nsmallest(self.nb_voisins, self.df_vecteur['distance'])
         return self.df_vecteur['code'].loc[self.df_vecteur['distance']
                                            .isin(min_distance)]
-
-    def find_similar_vector(self, vector):
-        """return the vector of the similar image
-            Args:
-            vector (numpy Array): vector with one line, result of the CNN model
-        Returns:
-            numpy Array: vector of the similar image in the vector database
-        """
-        neighboors = MODEL_KNN.kneighbors(vector)
-        return neighboors
 
     def find_similar_vector_id(self, vecteur, nb_id):
         """returns a list of id's corresponding to the nb_id of similar vectors
@@ -88,40 +75,6 @@ class class_knn:
         self.vecteur = vecteur
         self.nb_voisins = nb_id
         return self.calcul_knn()
-
-    def test_performance_model(self, model):
-        """displays the performance of the model with different metrics, using graphs
-
-        Args:
-            model (model Object): already trained model that you want to test
-        """
-        pass
-
-    def train_model(self, nb_vecteur, hp_model):
-        """train model cnn with its hyperparameters
-
-        Args:
-            nb_image (int): number image for train
-            hp_model (dico): dictionnaire with hyperparameters
-
-        Returns:
-            Object model: model train
-        """
-        x = DF_VECTOR.drop(['code'])
-        MODEL_KNN.fit(x)
-        return MODEL_KNN
-
-    def create_model(self, summary_model):
-        """create model which no save
-
-        Args:
-            summary_model (dico): model and parameter of model
-
-        Returns:
-            Object: model for creation of vector
-        """
-        model = "CNN"
-        return model
 
     def save_model(self, model):
         """save in a file the name of the model and the parameters after training
@@ -140,7 +93,6 @@ class class_knn:
         Returns:
             Object: model object
         """
-        global MODEL_KNN, DF_VECTOR
-        DF_VECTOR = pd.read_csv(PATH_DATA_VECTEUR_FILE)
+        # DF_VECTOR = pd.read_csv(PATH_DATA_VECTEUR_FILE)
         MODEL_CNN = NearestNeighbors(n_clusters=2, random_state=0)
         return MODEL_CNN

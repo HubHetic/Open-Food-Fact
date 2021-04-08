@@ -41,11 +41,13 @@ def implement(path_image):
     """
     if not os.path.exists(PATH_DATA):
         os.mkdir(PATH_DATA)
+    if not os.path.exists(PATH_DATA_IMAGE):
         os.mkdir(PATH_DATA_IMAGE)
+    if not os.path.exists(PATH_DATA_VECTEUR):
         os.mkdir(PATH_DATA_VECTEUR)
+    if not os.path.exists(PATH_DATA_CNN):
         os.mkdir(PATH_DATA_CNN)
-        os.mkdir(PATH_DATA_CNN_TRAIN)
-        os.mkdir(PATH_DATA_CNN_TEST)
+    if not os.path.exists(PATH_DATA_KNN):
         os.mkdir(PATH_DATA_KNN)
     if path_image == '':
         return None

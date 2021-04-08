@@ -11,7 +11,7 @@ from cnn_file import CNN
 from knn_file import class_knn
 # from Knn_file import class_knn
 from db_vecteur import find_code, new_list_vecteur_bdd
-from db_image import changer_format_folder, find_image
+from db_image import changer_format_image_folder, find_image
 from db_produit import find_line
 from file_variable import implement
 from file_variable import PATH_DATA_IMAGE
@@ -38,8 +38,8 @@ def image_to_images(path_image, nb_image):
         int: id code of the image in the databases
     """
     list_id = image_to_code(path_image, nb_image)
-    list_image = [find_image(code) for code in list_id]
-    return list_image
+    list_image_path = [find_image(code) for code in list_id]
+    return list_image_path
 
 
 def image_to_code(path_image, nb_image):
@@ -72,13 +72,12 @@ def image_to_line_data(image):
     return line
 
 
-def all_implement(path_image, build_model=False):
+def all_implement(path_image):
     implement(path_image)
-    if build_model:
-        global MODEL_CNN, MODEL_KNN
-        MODEL_CNN = CNN()
-        MODEL_CNN.charge_model()
-        MODEL_KNN = class_knn()
+    global MODEL_CNN, MODEL_KNN
+    MODEL_CNN = CNN()
+    MODEL_CNN.charge_model()
+    MODEL_KNN = class_knn()
 
 
 def set_up_model(type_model, name_model):
@@ -122,7 +121,7 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         print("=========================")
         print("Start image prep")
         tps1 = time.time()
-    list_images_prep, list_names = changer_format_folder(liste_images, format)
+    list_images_prep, list_names = changer_format_image_folder(liste_images, format)
     if verbose:
         tps2 = time.time()
         print(f"temps d'execution: {tps2 - tps1}")
@@ -138,24 +137,16 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
+
+
+def vectoriser(verbose=False):
+    if verbose:
+        print("=========================")
+        print("Start create new dataset")
+        tps1 = time.time()
     list_images_prep = tuple(list_images_prep)
     liste_vecteur = new_list_vecteur_bdd(MODEL_CNN.MODEL, list_images_prep,
                                          list_names)
     if verbose:
         tps2 = time.time()
         print(f"temps d'execution: {tps2 - tps1}")
-    return liste_vecteur
-
-
-def train_Knn(train=False):
-    """train KNN with nb_image if != 0 and see performance
-
-    Args:
-        train (bool, optional): train model if it's true. Defaults to False.
-    """
-    pass
-
-
-# TODO comprend pas l'interet , a discuter
-def print_info(data_picture):
-    pass
