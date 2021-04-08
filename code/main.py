@@ -1,21 +1,20 @@
 # ===========================================
 # IMPORT
 # ===========================================
-from PIL import Image
 import os
-import numpy as np
-import random
 import time
 from matplotlib.pyplot import imshow
+import matplotlib.pyplot as plt
 from cnn_file import CNN
 from knn_file import class_knn
 # from Knn_file import class_knn
-from db_vecteur import find_code, new_list_vecteur_bdd
+from db_vecteur import new_list_vecteur_bdd, save_base_vector
 from db_image import changer_format_image_folder, find_image
 from db_produit import find_line
 from file_variable import implement
-from file_variable import PATH_DATA_IMAGE
+from file_variable import PATH_DATA_IMAGE, PATH_DATA_VECTEUR_FILE, PATH_DATA_VECTEUR
 from db_image import changer_format
+import pandas as pd
 
 
 # ===========================================
@@ -51,11 +50,15 @@ def show_image(path_image, nb_image):
     print("=============================")
     print(f"image a trouver {path_image.split(',')[-1]}")
     vect = changer_format(path_image, (224, 224))[0]
+    fig, axes = plt.subplots(1, 1, figsize=(2, 2))
     imshow(vect)
     list_image_found = image_to_images(path_image, nb_image)
     print("image trouve")
-    for img in list_image_found:
-        imshow(changer_format(path_image, (224, 224))[0])
+    # axes = axes.flatten()
+    fig2, axes = plt.subplots(1, nb_image, figsize=(2 * nb_image, 2))
+    for img, ax in zip(list_image_found, axes):
+        ax.imshow(changer_format(img, (224, 224))[0])
+        ax.axis('off')
 
 
 def image_to_line_data(image):
@@ -67,9 +70,13 @@ def image_to_line_data(image):
     Returns:
         pandas.Series: line in the product database
     """
-    code = image_to_code(image)
-    line = find_line(code)
+    # code = image_to_code(image, 1)
+    line = find_line()
     return line
+
+
+def display_data_vector_available():
+    return os.listdir(PATH_DATA_VECTEUR)
 
 
 def all_implement(path_image):
@@ -78,6 +85,11 @@ def all_implement(path_image):
     MODEL_CNN = CNN()
     MODEL_CNN.charge_model()
     MODEL_KNN = class_knn()
+
+
+def choice_vector_database(name_database):
+    path = PATH_DATA_VECTEUR + name_database
+    MODEL_KNN.charge_database(path)
 
 
 def set_up_model(type_model, name_model):
@@ -121,7 +133,8 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         print("=========================")
         print("Start image prep")
         tps1 = time.time()
-    list_images_prep, list_names = changer_format_image_folder(liste_images, format)
+    list_images_prep, list_names = changer_format_image_folder(liste_images,
+                                                               format)
     if verbose:
         tps2 = time.time()
         print(f"temps d'execution: {tps2 - tps1}")
@@ -140,13 +153,25 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
 
 
 def vectoriser(verbose=False):
+    liste_images = os.listdir(PATH_DATA_IMAGE)[:1500]
     if verbose:
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
-    list_images_prep = tuple(list_images_prep)
-    liste_vecteur = new_list_vecteur_bdd(MODEL_CNN.MODEL, list_images_prep,
-                                         list_names)
-    if verbose:
-        tps2 = time.time()
-        print(f"temps d'execution: {tps2 - tps1}")
+    img = [liste_images.pop(0)]
+    img_prep, name = changer_format_image_folder(img, (224, 224))
+    df = new_list_vecteur_bdd(MODEL_CNN.MODEL, img_prep, [name])
+    index = 0
+    for new_index in range(500, len(liste_images), 500):
+        reduce_list_image = liste_images[index:new_index]
+        list_images_prep, list_names = changer_format_image_folder(reduce_list_image,
+                                                                   (224, 224))
+        df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL, list_images_prep,
+                                                 list_names)])
+        index = new_index
+        if verbose:
+            tps2 = time.time()
+            print(f"nombre traité: {new_index}")
+            print(f"temps d'execution: {tps2 - tps1}")
+    df = df.iloc[1:]
+    save_base_vector(df, PATH_DATA_VECTEUR_FILE)

@@ -22,10 +22,9 @@ from heapq import nsmallest
 class class_knn:
 
     def __init__(self, vecteur_image='', nb_voisins=5):
-        self.model_kmeans = ''
         self.nb_voisins = nb_voisins
         self.vecteur = vecteur_image
-        self.df_vecteur = pd.read_csv(PATH_DATA_VECTEUR_FILE,  dtype={'code': str})
+        self.df_vecteur = ''
 
     def calcul_distance(self,  vecteur1):
         """
@@ -38,7 +37,7 @@ class class_knn:
             vecteur1)**2, it will also affect code
             So we stock it and replace it
         """
-        code = self.df_vecteur['code'] 
+        code = self.df_vecteur['code']
         self.df_vecteur.drop(columns=['code'], inplace=True)
         try:
             self.df_vecteur.drop(columns=['Unnamed: 0'], inplace=True)
@@ -82,6 +81,11 @@ class class_knn:
         Args:
             model (Object): model object
         """
+        pass
+
+    def charge_database(self, name_database_vector):
+        # TODO a faire plus tard pour trouver le chemin de cette database
+        self.df_vecteur = pd.read_csv(PATH_DATA_VECTEUR_FILE,  dtype={'code': str})
         pass
 
     def charge_model(self, PATH_file_model='', name_model=''):

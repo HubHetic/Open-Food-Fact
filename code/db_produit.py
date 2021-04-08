@@ -1,2 +1,2 @@
 def find_line():
-    pass
+    return None
