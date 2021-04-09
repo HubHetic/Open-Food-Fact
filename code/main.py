@@ -9,12 +9,9 @@ from cnn_file import CNN
 from knn_file import class_knn
 # from Knn_file import class_knn
 from db_vecteur import new_list_vecteur_bdd, save_base_vector
-from db_image import changer_format_image_folder, find_image
 from db_produit import find_line
-from file_variable import implement
+from file_variable import implement, PATH_DATA_VECTEUR
 from file_variable import PATH_DATA_IMAGE, PATH_DATA_VECTEUR_FILE
-from file_variable import PATH_DATA_VECTEUR
-from db_image import changer_format
 import pandas as pd
 import random
 
@@ -41,7 +38,7 @@ def image_to_images(path_image, nb_image):
         list(str): liste des chemins des fichiers images
     """
     list_id = image_to_code(path_image, nb_image)
-    list_image_path = [find_image(code) for code in list_id]
+    list_image_path = [MODEL_CNN.find_image(code) for code in list_id]
     return list_image_path
 
 
@@ -70,15 +67,17 @@ def show_image(path_image, nb_image):
     """
     print("=============================")
     print(f"image a trouver {path_image.split(',')[-1]}")
-    vect = changer_format(path_image, (224, 224))[0]
+    vect = MODEL_CNN.changer_format(path_image, (224, 224))[0]
+    print(vect.shape)
     fig, axes = plt.subplots(1, 1, figsize=(2, 2))
     imshow(vect)
     list_image_found = image_to_images(path_image, nb_image)
-    print("image trouve")
     # axes = axes.flatten()
+    
     fig2, axes = plt.subplots(1, nb_image, figsize=(2 * nb_image, 2))
     for img, ax in zip(list_image_found, axes):
-        ax.imshow(changer_format(img, (224, 224))[0])
+        vect = MODEL_CNN.changer_format(img, (224, 224))[0]
+        ax.imshow(vect)
         ax.axis('off')
 
 
@@ -204,8 +203,8 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         print("=========================")
         print("Start image prep")
         tps1 = time.time()
-    list_images_prep, list_names = changer_format_image_folder(liste_images,
-                                                               format)
+    list_images_prep, list_names = MODEL_CNN.changer_format_image_folder(liste_images,
+                                                                         format)
     if verbose:
         tps2 = time.time()
         print(f"temps d'execution: {tps2 - tps1}")
@@ -238,13 +237,13 @@ def vectoriser(verbose=False):
         print("Start create new dataset")
         tps1 = time.time()
     img = [liste_images.pop(0)]
-    img_prep, name = changer_format_image_folder(img, (224, 224))
+    img_prep, name = MODEL_CNN.changer_format_image_folder(img, (224, 224))
     df = new_list_vecteur_bdd(MODEL_CNN.MODEL, img_prep, [name])
     index = 0
     for new_index in range(500, len(liste_images), 500):
         reduce_list_image = liste_images[index:new_index]
-        list_img_prep, list_names = changer_format_image_folder(reduce_list_image,
-                                                                (224, 224))
+        list_img_prep, list_names = MODEL_CNN.changer_format_image_folder(reduce_list_image,
+                                                                          (224, 224))
         df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL, list_img_prep,
                                                  list_names)])
         index = new_index
