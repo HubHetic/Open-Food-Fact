@@ -12,9 +12,11 @@ from db_vecteur import new_list_vecteur_bdd, save_base_vector
 from db_image import changer_format_image_folder, find_image
 from db_produit import find_line
 from file_variable import implement
-from file_variable import PATH_DATA_IMAGE, PATH_DATA_VECTEUR_FILE, PATH_DATA_VECTEUR
+from file_variable import PATH_DATA_IMAGE, PATH_DATA_VECTEUR_FILE
+from file_variable import PATH_DATA_VECTEUR
 from db_image import changer_format
 import pandas as pd
+import random
 
 
 # ===========================================
@@ -28,13 +30,15 @@ MODEL_KNN = ''
 
 
 def image_to_images(path_image, nb_image):
-    """returns the id of a similar image in the variable image
+    """retourne la liste des chemins des nb_images similaire à l'image
+    stocker dans le path image
 
     Args:
-        image ([image object]): picture jpg, gz
+        path_image (str): chemin du fichier image à tester
+        nb_image (int): nombre d'image simmilaire qu'on veut retourner
 
     Returns:
-        int: id code of the image in the databases
+        list(str): liste des chemins des fichiers images
     """
     list_id = image_to_code(path_image, nb_image)
     list_image_path = [find_image(code) for code in list_id]
@@ -42,11 +46,28 @@ def image_to_images(path_image, nb_image):
 
 
 def image_to_code(path_image, nb_image):
+    """return les id nb_image similaires à l'image stocker
+    dans le chemins path_image
+
+    Args:
+        path_image (str): chemin du fichier image à tester
+        nb_image (int): nombre d'id image qu'on veut retourner
+
+    Returns:
+        list(str): liste des id images similaire
+    """
     vec = MODEL_CNN.image_to_vector(path_image)
     return MODEL_KNN.find_similar_vector_id(vec, nb_image)
 
 
 def show_image(path_image, nb_image):
+    """affiche l'image dans le chemin path et les nb_image similaire
+    à cette image
+
+    Args:
+        path_image (str): chemin du fichier image à afficher
+        nb_image (int): nombre d'image similaire que l'on veut afficher
+    """
     print("=============================")
     print(f"image a trouver {path_image.split(',')[-1]}")
     vect = changer_format(path_image, (224, 224))[0]
@@ -76,10 +97,33 @@ def image_to_line_data(image):
 
 
 def display_data_vector_available():
+    """retourne les noms des datasets créer par les différent modèle
+
+    Returns:
+        [string]: liste des différents noms
+    """
     return os.listdir(PATH_DATA_VECTEUR)
 
 
 def all_implement(path_image):
+    """implement les différent dossier nécessaire au déploiment du projet,
+    déplacer les images du path_image vers le dossiers data/image pour
+    pouvoir les tester. instancie les class MODEL_CNN et MODEL_KNN
+
+    - l'instance MODEL_CNN permet de choisir le modele pour transformer
+    l'image en vecteur ainsi que les différents fonction d'entrainement
+    et de teste de performances.
+
+    - l'instance MODEL_KNN permet de choisir le modele pour choisir
+    les images similaire
+
+    si vous avez déjà mis les images dans le dossier data/image/
+    mettait seulement  '' pour le path_image
+
+    Args:
+        path_image (string): chemin absolue du dossier contenant
+        les images à déplacer dans le dossier data/image
+    """
     implement(path_image)
     global MODEL_CNN, MODEL_KNN
     MODEL_CNN = CNN()
@@ -88,33 +132,60 @@ def all_implement(path_image):
 
 
 def choice_vector_database(name_database):
+    """choisi le dataset vecteur utilisé par le model_KNN
+    pour la recherche des images similaires
+
+    Args:
+        name_database (string): nom du datasets à utilisé,
+        la liste des noms peut se trouver avec la fonction
+        display_data_vector_available
+    """
     path = PATH_DATA_VECTEUR + name_database
     MODEL_KNN.charge_database(path)
 
 
 def set_up_model(type_model, name_model):
-    """load a model save
+    """charger le modele name_model dans le type_model qui est soit
+    KNN ou CNN
 
     Args:
-        type_model (MODEL enum): type model KNN or CNN
+        type_model (string): valeur "KNN" ou "CNN"
         name_model (string): name file model
 
-    Returns:
-        Object: model
+    exemple:
+        # changer model VGG16 par Mobilenet
+        >>> set_up_model("CNN", "mobile_net")
+        # revenir sur le modele VGG16
+        >>> set_up_model("CNN", "VGG16")
     """
-    if os.path.exists(name_model):
-        type_model.charge_model(PATH_file_model=name_model)
+    if type_model == "KNN":
+        MODEL_KNN.charge_model(name_model=name_model)
     else:
-        type_model.charge_model(name_model=name_model)
+        MODEL_CNN.charge_model(name_model=name_model)
 
 
 def train_cnn(nb_image=0, format=(224, 224), verbose=False):
-    """train CNN with nb_image if != 0 and see performance
+    """entraine le modele stocker dans la variable CNN_MODEL avec nb_image,
+    avec les images préprocessé avec la variable format pour définir
+    le format de l'image
 
     Args:
-        train (bool, optional): train model if it's true. Defaults to False.
-        nb_image (int, optional): choice nb image for train if !=0. Defaults
-        to 0.
+        nb_image (int, optional): nombre d'image pour l'entrainement du model
+         si nb_image = 0 toutes les images stocker dans data/image est utilisé
+         . Defaults to 0.
+        format ((int, int)), optional): format de l'image après le
+        préprocessing. Defaults to (224, 224).
+        verbose (bool, optional): affiche les différents étapes réaliées
+        et le temps de calcul. Defaults to False.
+
+    Exemple:
+        # entrainer le modele sur toutes les images
+        >>> train_cnn()
+        # entrainer le modele sur 2000 images, au format (128, 128)
+        >>> train_cnn(nb_image=2000, format=(128, 128))
+        # entrainer le modele sur toutes les images et affiché
+        # le temps de calcul
+        >>> train_cnn(verbose=True)
     """
     if verbose:
         print("=========================")
@@ -124,7 +195,7 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         liste_images = os.listdir(PATH_DATA_IMAGE)
     else:
         liste_images = os.listdir(PATH_DATA_IMAGE)
-        # random.shuffle(liste_images)
+        random.shuffle(liste_images)
         liste_images = liste_images[0:nb_image]
     if verbose:
         tps2 = time.time()
@@ -153,6 +224,14 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
 
 
 def vectoriser(verbose=False):
+    """contruit un dataset vecteur de l'ensemble des images stocker
+    dans le dossier data/image avec le modele CNN utilisé dans
+    la variable MODEL_CNN et le stocker dans le dossier data/vecteur
+
+    Args:
+        verbose (bool, optional): [afficher les
+        différents étapes réalisé et le temps de calcul]. Defaults to False.
+    """
     liste_images = os.listdir(PATH_DATA_IMAGE)[:1500]
     if verbose:
         print("=========================")
@@ -164,9 +243,9 @@ def vectoriser(verbose=False):
     index = 0
     for new_index in range(500, len(liste_images), 500):
         reduce_list_image = liste_images[index:new_index]
-        list_images_prep, list_names = changer_format_image_folder(reduce_list_image,
-                                                                   (224, 224))
-        df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL, list_images_prep,
+        list_img_prep, list_names = changer_format_image_folder(reduce_list_image,
+                                                                (224, 224))
+        df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL, list_img_prep,
                                                  list_names)])
         index = new_index
         if verbose:
