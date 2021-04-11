@@ -16,6 +16,8 @@ PATH_DATA_CNN = PATH_DATA + "/CNN"
 PATH_DATA_CNN_TRAIN = PATH_DATA_CNN + "/TRAIN"
 PATH_DATA_CNN_TEST = PATH_DATA_CNN + "/TEST"
 
+PATH_DATA_IMAGE_SCRAP = PATH_DATA + "/Data_a_scrap"
+
 PATH_DATA_KNN = PATH_DATA + "/KNN"
 
 # ===========================================
@@ -24,6 +26,8 @@ PATH_DATA_KNN = PATH_DATA + "/KNN"
 
 PATH_DATA_CNN_VG16 = PATH_DATA_CNN + "/vg16.txt"
 PATH_DATA_VECTEUR_FILE = PATH_DATA_VECTEUR + "/vector.csv"
+PATH_DATA_TRAIN = PATH_DATA_IMAGE_SCRAP + "/openfoodfacts.data_url_image_train_110k_v1.csv"
+PATH_DATA_TEST = PATH_DATA_IMAGE_SCRAP + "/openfoodfacts.data_url_image_test_110k_v1.csv"
 
 
 # ===========================================

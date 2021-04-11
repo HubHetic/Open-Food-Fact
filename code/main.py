@@ -12,15 +12,22 @@ from db_vecteur import new_list_vecteur_bdd, save_base_vector
 from db_produit import find_line
 from file_variable import implement, PATH_DATA_VECTEUR
 from file_variable import PATH_DATA_IMAGE, PATH_DATA_VECTEUR_FILE
+from file_variable import PATH_DATA_TRAIN, PATH_DATA_TEST, PATH_DATA_CNN_TEST
 import pandas as pd
 import random
 
 
 # ===========================================
-# VARIABLE GLOBAL
+# VARIABLE GLOBALE
 # ===========================================
 MODEL_CNN = ''
 MODEL_KNN = ''
+
+DF_PRODUIT_TRAIN = pd.read_csv(PATH_DATA_TRAIN)['code', 'product_name']
+DF_PRODUIT_TRAIN.set_index('code')
+
+DF_PRODUIT_TEST = pd.read_csv(PATH_DATA_TEST)['code', 'product_name']
+DF_PRODUIT_TEST.set_index('code')
 # ===========================================
 # FONCTION
 # ===========================================
@@ -51,14 +58,14 @@ def image_to_code(path_image, nb_image):
         nb_image (int): nombre d'id image qu'on veut retourner
 
     Returns:
-        list(str): liste des id images similaire
+        list(str): liste des id images similaires
     """
     vec = MODEL_CNN.image_to_vector(path_image)
     return MODEL_KNN.find_similar_vector_id(vec, nb_image)
 
 
 def show_image(path_image, nb_image):
-    """affiche l'image dans le chemin path et les nb_image similaire
+    """affiche l'image dans le chemin path et les nb_image similaires
     à cette image
 
     Args:
@@ -164,13 +171,13 @@ def set_up_model(type_model, name_model):
 
 
 def train_cnn(nb_image=0, format=(224, 224), verbose=False):
-    """entraine le modele stocker dans la variable CNN_MODEL avec nb_image,
-    avec les images préprocessé avec la variable format pour définir
+    """entraine le modele stocké dans la variable CNN_MODEL avec nb_image,
+    avec les images préprocessées avec la variable format pour définir
     le format de l'image
 
     Args:
         nb_image (int, optional): nombre d'image pour l'entrainement du model
-         si nb_image = 0 toutes les images stocker dans data/image est utilisé
+         si nb_image = 0 toutes les images stockées dans data/image sont utilisées
          . Defaults to 0.
         format ((int, int)), optional): format de l'image après le
         préprocessing. Defaults to (224, 224).
@@ -253,3 +260,47 @@ def vectoriser(verbose=False):
             print(f"temps d'execution: {tps2 - tps1}")
     df = df.iloc[1:]
     save_base_vector(df, PATH_DATA_VECTEUR_FILE)
+
+
+def code_to_name_produit(liste_id):
+
+    return [DF_PRODUIT_TRAIN.loc[id, 'product_name'] for id in liste_id]
+
+
+def test_performance_cnn(nb_images_test=5):
+    """[summary]
+
+    Args:
+        nb_images_test (int, optional): [description]. Defaults to 5.
+    """    
+    images_a_tester = os.listdir(PATH_DATA_CNN_TEST)
+    
+    liste_images = [PATH_DATA_CNN_TEST+'/'+image for image in images_a_tester]
+
+    images_a_tester = [image.replace('.jpg', '') for image in images_a_tester]
+
+    for path_image, code_origin_image in zip(liste_images, images_a_tester):
+        liste_id = image_to_code(path_image, nb_images_test)
+        liste_produits = code_to_name_produit(liste_id)
+        nom_du_produit = DF_PRODUIT_TEST.loc[code_origin_image, 'product_name']
+
+        compteur_de_match = 0
+
+        if nom_du_produit in liste_produits:
+            compteur_de_match += 1
+        
+    return compteur_de_match/(len(DF_PRODUIT_TEST))
+
+    
+
+
+
+    
+
+
+        
+
+    
+    
+
+
