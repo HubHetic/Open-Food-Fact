@@ -3,7 +3,6 @@
 # =======================================
 import numpy as np
 from tensorflow.keras.preprocessing import image
-import tensorflow as tf
 from keras.applications.vgg16 import VGG16
 from keras.applications import MobileNet
 from tensorflow.keras.applications import EfficientNetB0
@@ -36,7 +35,7 @@ class CNN():
 
         Returns:
             [np array]: numpy array de l'image préprocess
-        
+
         Exemple:
             # preproces image au format (224, 224)
             >>> path_image = "./data/nutella.jpg"
@@ -104,7 +103,7 @@ class CNN():
         else:
             self.MODEL = VGG16(weights='imagenet')
             self.fonction_preprpocessing = prepro_efficient_net
-    
+
     def find_image(self, code_image):
         """retourne le chemin de l'image dont le nom est code_image
 
@@ -125,10 +124,9 @@ class CNN():
             format ((int, int)): format final de l'image preprocess
 
         Returns:
-            (numpy.array, list(string)): le couple images préprocess et le 
+            (numpy.array, list(string)): le couple images préprocess et le
             nom des images
         """
-
         liste_img_prep = []
         FORMAT = (224, 224)
         for img in list_image:

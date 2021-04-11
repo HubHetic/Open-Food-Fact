@@ -7,7 +7,6 @@ from matplotlib.pyplot import imshow
 import matplotlib.pyplot as plt
 from cnn_file import CNN
 from knn_file import class_knn
-# from Knn_file import class_knn
 from db_vecteur import new_list_vecteur_bdd, save_base_vector
 from db_produit import find_line
 from file_variable import implement, PATH_DATA_VECTEUR
@@ -23,10 +22,10 @@ import random
 MODEL_CNN = ''
 MODEL_KNN = ''
 
-DF_PRODUIT_TRAIN = pd.read_csv(PATH_DATA_TRAIN)['code', 'product_name']
+DF_PRODUIT_TRAIN = pd.read_csv(PATH_DATA_TRAIN)[['code', 'product_name']]
 DF_PRODUIT_TRAIN.set_index('code')
 
-DF_PRODUIT_TEST = pd.read_csv(PATH_DATA_TEST)['code', 'product_name']
+DF_PRODUIT_TEST = pd.read_csv(PATH_DATA_TEST)[['code', 'product_name']]
 DF_PRODUIT_TEST.set_index('code')
 # ===========================================
 # FONCTION
@@ -79,8 +78,6 @@ def show_image(path_image, nb_image):
     fig, axes = plt.subplots(1, 1, figsize=(2, 2))
     imshow(vect)
     list_image_found = image_to_images(path_image, nb_image)
-    # axes = axes.flatten()
-    
     fig2, axes = plt.subplots(1, nb_image, figsize=(2 * nb_image, 2))
     for img, ax in zip(list_image_found, axes):
         vect = MODEL_CNN.changer_format(img, (224, 224))[0]
@@ -146,7 +143,7 @@ def choice_vector_database(name_database):
         la liste des noms peut se trouver avec la fonction
         display_data_vector_available
     """
-    path = PATH_DATA_VECTEUR + name_database
+    path = PATH_DATA_VECTEUR + '/' + name_database
     MODEL_KNN.charge_database(path)
 
 
@@ -177,7 +174,8 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
 
     Args:
         nb_image (int, optional): nombre d'image pour l'entrainement du model
-         si nb_image = 0 toutes les images stockées dans data/image sont utilisées
+         si nb_image = 0 toutes les images stockées dans data/image sont
+         utilisées
          . Defaults to 0.
         format ((int, int)), optional): format de l'image après le
         préprocessing. Defaults to (224, 224).
@@ -210,8 +208,8 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         print("=========================")
         print("Start image prep")
         tps1 = time.time()
-    list_images_prep, list_names = MODEL_CNN.changer_format_image_folder(liste_images,
-                                                                         format)
+    list_images_prep, list_names = MODEL_CNN.changer_format_image_folder(
+        liste_images, format)
     if verbose:
         tps2 = time.time()
         print(f"temps d'execution: {tps2 - tps1}")
@@ -229,7 +227,7 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         tps1 = time.time()
 
 
-def vectoriser(verbose=False):
+def vectoriser(name_database="vector.csv", verbose=False):
     """contruit un dataset vecteur de l'ensemble des images stocker
     dans le dossier data/image avec le modele CNN utilisé dans
     la variable MODEL_CNN et le stocker dans le dossier data/vecteur
@@ -249,21 +247,34 @@ def vectoriser(verbose=False):
     index = 0
     for new_index in range(500, len(liste_images), 500):
         reduce_list_image = liste_images[index:new_index]
-        list_img_prep, list_names = MODEL_CNN.changer_format_image_folder(reduce_list_image,
-                                                                          (224, 224))
-        df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL, list_img_prep,
+        list_img_prep, list_names = MODEL_CNN.changer_format_image_folder(
+            reduce_list_image, (224, 224))
+        df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL,
+                                                 list_img_prep,
                                                  list_names)])
         index = new_index
         if verbose:
             tps2 = time.time()
             print(f"nombre traité: {new_index}")
             print(f"temps d'execution: {tps2 - tps1}")
+    reduce_list_image = liste_images[index:]
+    list_img_prep, list_names = MODEL_CNN.changer_format_image_folder(
+        reduce_list_image, (224, 224))
+    df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL, list_img_prep,
+                                             list_names)])
+    index = new_index
+    if verbose:
+        tps2 = time.time()
+        print(f"nombre traité: {len(liste_images)}")
+        print(f"temps d'execution: {tps2 - tps1}")
     df = df.iloc[1:]
-    save_base_vector(df, PATH_DATA_VECTEUR_FILE)
+    if name_database == "vector.csv":
+        save_base_vector(df, PATH_DATA_VECTEUR_FILE)
+    else:
+        save_base_vector(df, PATH_DATA_VECTEUR + '/' + name_database)
 
 
 def code_to_name_produit(liste_id):
-
     return [DF_PRODUIT_TRAIN.loc[id, 'product_name'] for id in liste_id]
 
 
@@ -272,35 +283,21 @@ def test_performance_cnn(nb_images_test=5):
 
     Args:
         nb_images_test (int, optional): [description]. Defaults to 5.
-    """    
+    """
     images_a_tester = os.listdir(PATH_DATA_CNN_TEST)
-    
     liste_images = [PATH_DATA_CNN_TEST+'/'+image for image in images_a_tester]
-
     images_a_tester = [image.replace('.jpg', '') for image in images_a_tester]
-
+    table_index = dict([(i, 0) for i in range(nb_images_test)])
+    table_index[-1] = 0
     for path_image, code_origin_image in zip(liste_images, images_a_tester):
         liste_id = image_to_code(path_image, nb_images_test)
-        liste_produits = code_to_name_produit(liste_id)
+        liste_produits = code_to_name_produit(liste_id.reverse())
         nom_du_produit = DF_PRODUIT_TEST.loc[code_origin_image, 'product_name']
-
-        compteur_de_match = 0
-
-        if nom_du_produit in liste_produits:
-            compteur_de_match += 1
-        
-    return compteur_de_match/(len(DF_PRODUIT_TEST))
-
-    
-
-
-
-    
-
-
-        
-
-    
-    
-
-
+        try:
+            table_index[liste_produits.index(nom_du_produit)] += 1
+        except ValueError:
+            table_index[-1] += 1
+    x = [i for i in range(1, nb_images_test + 2)]
+    y = [table_index[i] for i in range(nb_images_test)]
+    y.append(table_index[-1])
+    plt.bar(x, y)

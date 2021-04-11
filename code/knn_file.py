@@ -2,7 +2,6 @@
 # IMPORT
 # ========================================
 import pandas as pd
-from file_variable import PATH_DATA_VECTEUR_FILE
 from sklearn.neighbors import NearestNeighbors
 from heapq import nsmallest
 # =======================================
@@ -85,7 +84,7 @@ class class_knn:
 
     def charge_database(self, name_database_vector):
         # TODO a faire plus tard pour trouver le chemin de cette database
-        self.df_vecteur = pd.read_csv(PATH_DATA_VECTEUR_FILE,  dtype={'code': str})
+        self.df_vecteur = pd.read_csv(name_database_vector,  dtype={'code': str})
         pass
 
     def charge_model(self, PATH_file_model='', name_model=''):
