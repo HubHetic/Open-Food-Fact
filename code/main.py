@@ -23,10 +23,10 @@ MODEL_CNN = ''
 MODEL_KNN = ''
 
 DF_PRODUIT_TRAIN = pd.read_csv(PATH_DATA_TRAIN)[['code', 'product_name']]
-DF_PRODUIT_TRAIN.set_index('code')
+DF_PRODUIT_TRAIN = DF_PRODUIT_TRAIN.set_index('code')
 
 DF_PRODUIT_TEST = pd.read_csv(PATH_DATA_TEST)[['code', 'product_name']]
-DF_PRODUIT_TEST.set_index('code')
+DF_PRODUIT_TEST = DF_PRODUIT_TEST.set_index('code')
 # ===========================================
 # FONCTION
 # ===========================================
@@ -132,6 +132,8 @@ def all_implement(path_image):
     MODEL_CNN = CNN()
     MODEL_CNN.charge_model()
     MODEL_KNN = class_knn()
+    MODEL_KNN.charge_model()
+    print(MODEL_KNN.model)
 
 
 def choice_vector_database(name_database):
@@ -165,6 +167,20 @@ def set_up_model(type_model, name_model):
         MODEL_KNN.charge_model(name_model=name_model)
     else:
         MODEL_CNN.charge_model(name_model=name_model)
+
+
+def train_knn(name_database, verbose=False):
+    choice_vector_database(name_database)
+    if verbose:
+        print("=========================")
+        print("Start")
+        print(f"taille du dataset: {MODEL_KNN.df_vecteur.shape}")
+        tps1 = time.time()
+    MODEL_KNN.train()
+    if verbose:
+        tps2 = time.time()
+        print(f"temps d'execution: {tps2 - tps1}")
+        print("=========================")
 
 
 def train_cnn(nb_image=0, format=(224, 224), verbose=False):
@@ -223,8 +239,6 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         tps2 = time.time()
         print(f"temps d'execution: {tps2 - tps1}")
         print("=========================")
-        print("Start create new dataset")
-        tps1 = time.time()
 
 
 def vectoriser(name_database="vector.csv", verbose=False):
@@ -236,7 +250,7 @@ def vectoriser(name_database="vector.csv", verbose=False):
         verbose (bool, optional): [afficher les
         différents étapes réalisé et le temps de calcul]. Defaults to False.
     """
-    liste_images = os.listdir(PATH_DATA_IMAGE)[:1500]
+    liste_images = os.listdir(PATH_DATA_IMAGE)
     if verbose:
         print("=========================")
         print("Start create new dataset")
@@ -245,7 +259,7 @@ def vectoriser(name_database="vector.csv", verbose=False):
     img_prep, name = MODEL_CNN.changer_format_image_folder(img, (224, 224))
     df = new_list_vecteur_bdd(MODEL_CNN.MODEL, img_prep, [name])
     index = 0
-    for new_index in range(500, len(liste_images), 500):
+    for new_index in range(5000, len(liste_images), 5000):
         reduce_list_image = liste_images[index:new_index]
         list_img_prep, list_names = MODEL_CNN.changer_format_image_folder(
             reduce_list_image, (224, 224))
@@ -278,20 +292,38 @@ def code_to_name_produit(liste_id):
     return [DF_PRODUIT_TRAIN.loc[id, 'product_name'] for id in liste_id]
 
 
-def test_performance_cnn(nb_images_test=5):
+def test_performance_cnn(nb_images_test=5, verbose=False):
     """[summary]
 
     Args:
         nb_images_test (int, optional): [description]. Defaults to 5.
     """
+    if verbose:
+        nb_image_fait = 0
+        print("=========================")
+        print("Start create new dataset")
+        tps1 = time.time()
     images_a_tester = os.listdir(PATH_DATA_CNN_TEST)
     liste_images = [PATH_DATA_CNN_TEST+'/'+image for image in images_a_tester]
     images_a_tester = [image.replace('.jpg', '') for image in images_a_tester]
     table_index = dict([(i, 0) for i in range(nb_images_test)])
     table_index[-1] = 0
     for path_image, code_origin_image in zip(liste_images, images_a_tester):
-        liste_id = image_to_code(path_image, nb_images_test)
-        liste_produits = code_to_name_produit(liste_id.reverse())
+        if verbose:
+            if (nb_image_fait % 300) == 0:
+                tps2 = time.time()
+                print(f"nombre traité: {nb_image_fait}")
+                print(f"temps d'execution: {tps2 - tps1}")
+            nb_image_fait += 1
+        try:
+            liste_id = image_to_code(path_image, nb_images_test)
+        except:
+            continue
+        try:
+            liste_produits = [DF_PRODUIT_TRAIN.loc[id, 'product_name'] for id in liste_id]
+        except KeyError as e:
+            print(f"code produit not found : {e}")
+            continue
         nom_du_produit = DF_PRODUIT_TEST.loc[code_origin_image, 'product_name']
         try:
             table_index[liste_produits.index(nom_du_produit)] += 1
