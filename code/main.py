@@ -3,17 +3,15 @@
 # ===========================================
 import os
 import time
-from matplotlib.pyplot import imshow
 import matplotlib.pyplot as plt
-from cnn_file import CNN
-from knn_file import class_knn
-from db_vecteur import new_list_vecteur_bdd, save_base_vector
-from db_produit import find_line
-from file_variable import implement, PATH_DATA_VECTEUR
-from file_variable import PATH_DATA_IMAGE, PATH_DATA_VECTEUR_FILE
-from file_variable import PATH_DATA_TRAIN, PATH_DATA_TEST, PATH_DATA_CNN_TEST
 import pandas as pd
 import random
+
+import file_variable as fv
+from cnn_file import CNN
+from knn_file import class_knn
+from db_vecteur import new_list_vecteur_bdd
+from db_vecteur import save_base_vector
 
 
 # ===========================================
@@ -22,81 +20,77 @@ import random
 MODEL_CNN = ''
 MODEL_KNN = ''
 
-DF_PRODUIT_TRAIN = pd.read_csv(PATH_DATA_TRAIN)[['code', 'product_name']]
+DF_PRODUIT_TRAIN = pd.read_csv(fv.PATH_DATA_TRAIN)[['code', 'product_name']]
 DF_PRODUIT_TRAIN = DF_PRODUIT_TRAIN.set_index('code')
 
-DF_PRODUIT_TEST = pd.read_csv(PATH_DATA_TEST)[['code', 'product_name']]
+DF_PRODUIT_TEST = pd.read_csv(fv.PATH_DATA_TEST)[['code', 'product_name']]
 DF_PRODUIT_TEST = DF_PRODUIT_TEST.set_index('code')
 # ===========================================
 # FONCTION
 # ===========================================
 
 
-def image_to_images(path_image, nb_image):
-    """retourne la liste des chemins des nb_images similaire à l'image
+def picture_to_pictures(path_picture, nb_pictures):
+    """retourne la liste des chemins des nb_pictures similaire à l'image
     stocker dans le path image
 
     Args:
-        path_image (str): chemin du fichier image à tester
-        nb_image (int): nombre d'image simmilaire qu'on veut retourner
+        path_picture (str): chemin du fichier image à tester
+        nb_pictures (int): nombre d'image simmilaire qu'on veut retourner
 
     Returns:
         list(str): liste des chemins des fichiers images
     """
-    list_id = image_to_code(path_image, nb_image)
-    list_image_path = [MODEL_CNN.find_image(code) for code in list_id]
-    return list_image_path
+    list_id = picture_to_list_code(path_picture, nb_pictures)
+    return [MODEL_CNN.find_image(code) for code in list_id]
 
 
-def image_to_code(path_image, nb_image):
-    """return les id nb_image similaires à l'image stocker
-    dans le chemins path_image
+def picture_to_list_code(path_picture, nb_pictures):
+    """return les id nb_pictures similaires à l'image stocker
+    dans le chemins path_picture
 
     Args:
-        path_image (str): chemin du fichier image à tester
-        nb_image (int): nombre d'id image qu'on veut retourner
+        path_picture (str): chemin du fichier image à tester
+        nb_pictures (int): nombre d'id image qu'on veut retourner
 
     Returns:
         list(str): liste des id images similaires
     """
-    vec = MODEL_CNN.image_to_vector(path_image)
-    return MODEL_KNN.find_similar_vector_id(vec, nb_image)
+    vec = MODEL_CNN.image_to_vector(path_picture)
+    return MODEL_KNN.find_similar_vector_id(vec, nb_pictures)
 
 
-def show_image(path_image, nb_image):
-    """affiche l'image dans le chemin path et les nb_image similaires
+def find_path_sim_picture_to_code(code):
+    name = DF_PRODUIT_TEST.loc[code, 'product_name']
+    index = (DF_PRODUIT_TRAIN[DF_PRODUIT_TRAIN['product_name'] == name].index)[0]
+    return MODEL_CNN.find_image(index)
+
+
+def show_image(path_picture, nb_pictures):
+    """affiche l'image dans le chemin path et les nb_pictures similaires
     à cette image
 
     Args:
-        path_image (str): chemin du fichier image à afficher
-        nb_image (int): nombre d'image similaire que l'on veut afficher
+        path_picture (str): chemin du fichier image à afficher
+        nb_pictures (int): nombre d'image similaire que l'on veut afficher
     """
     print("=============================")
-    print(f"image a trouver {path_image.split(',')[-1]}")
-    vect = MODEL_CNN.changer_format(path_image, (224, 224))[0]
-    print(vect.shape)
-    fig, axes = plt.subplots(1, 1, figsize=(2, 2))
-    imshow(vect)
-    list_image_found = image_to_images(path_image, nb_image)
-    fig2, axes = plt.subplots(1, nb_image, figsize=(2 * nb_image, 2))
+    vector = MODEL_CNN.changer_format(path_picture, (224, 224))[0]
+    code = path_picture.split("/")[-1].replace(".jpg", "")
+    path_picture_train = find_path_sim_picture_to_code(code)
+    vector2 = MODEL_CNN.changer_format(path_picture_train, (224, 224))[0]
+    fig, axes = plt.subplots(1, 2, figsize=(4, 2))
+    axes[0].imshow(vector)
+    axes[0].legend("picture test")
+    axes[1].imshow(vector2)
+    axes[1].legend("picture of similar product picture test")
+    list_image_found = picture_to_pictures(path_picture, nb_pictures)
+    fig2, axes = plt.subplots(1, nb_pictures, figsize=(2 * nb_pictures, 2))
     for img, ax in zip(list_image_found, axes):
-        vect = MODEL_CNN.changer_format(img, (224, 224))[0]
-        ax.imshow(vect)
+        vector = MODEL_CNN.changer_format(img, (224, 224))[0]
+        ax.imshow(vector)
         ax.axis('off')
-
-
-def image_to_line_data(image):
-    """returns the product line of the image variable in the product database
-
-    Args:
-        image (Image Object): image.jpg gz
-
-    Returns:
-        pandas.Series: line in the product database
-    """
-    # code = image_to_code(image, 1)
-    line = find_line()
-    return line
+    fig2.legend("find pitcture with algo")
 
 
 def display_data_vector_available():
@@ -105,12 +99,12 @@ def display_data_vector_available():
     Returns:
         [string]: liste des différents noms
     """
-    return os.listdir(PATH_DATA_VECTEUR)
+    return os.listdir(fv.PATH_DATA_VECTOR)
 
 
-def all_implement(path_image):
+def all_implement(path_picture):
     """implement les différent dossier nécessaire au déploiment du projet,
-    déplacer les images du path_image vers le dossiers data/image pour
+    déplacer les images du path_picture vers le dossiers data/image pour
     pouvoir les tester. instancie les class MODEL_CNN et MODEL_KNN
 
     - l'instance MODEL_CNN permet de choisir le modele pour transformer
@@ -121,13 +115,13 @@ def all_implement(path_image):
     les images similaire
 
     si vous avez déjà mis les images dans le dossier data/image/
-    mettait seulement  '' pour le path_image
+    mettait seulement  '' pour le path_picture
 
     Args:
-        path_image (string): chemin absolue du dossier contenant
+        path_picture (string): chemin absolue du dossier contenant
         les images à déplacer dans le dossier data/image
     """
-    implement(path_image)
+    fv.implement(path_picture)
     global MODEL_CNN, MODEL_KNN
     MODEL_CNN = CNN()
     MODEL_CNN.charge_model()
@@ -145,7 +139,7 @@ def choice_vector_database(name_database):
         la liste des noms peut se trouver avec la fonction
         display_data_vector_available
     """
-    path = PATH_DATA_VECTEUR + '/' + name_database
+    path = fv.PATH_DATA_VECTOR + name_database
     MODEL_KNN.charge_database(path)
 
 
@@ -174,23 +168,23 @@ def train_knn(name_database, verbose=False):
     if verbose:
         print("=========================")
         print("Start")
-        print(f"taille du dataset: {MODEL_KNN.df_vecteur.shape}")
+        print(f"dataset size: {MODEL_KNN.df_vecteur.shape}")
         tps1 = time.time()
     MODEL_KNN.train()
     if verbose:
         tps2 = time.time()
-        print(f"temps d'execution: {tps2 - tps1}")
+        print(f"Execution time: {tps2 - tps1}")
         print("=========================")
 
 
-def train_cnn(nb_image=0, format=(224, 224), verbose=False):
-    """entraine le modele stocké dans la variable CNN_MODEL avec nb_image,
+def train_cnn(nb_pictures=0, format=(224, 224), verbose=False):
+    """entraine le modele stocké dans la variable CNN_MODEL avec nb_pictures,
     avec les images préprocessées avec la variable format pour définir
     le format de l'image
 
     Args:
-        nb_image (int, optional): nombre d'image pour l'entrainement du model
-         si nb_image = 0 toutes les images stockées dans data/image sont
+        nb_pictures (int, optional): nombre d'image pour l'entrainement du model
+         si nb_pictures = 0 toutes les images stockées dans data/image sont
          utilisées
          . Defaults to 0.
         format ((int, int)), optional): format de l'image après le
@@ -202,7 +196,7 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         # entrainer le modele sur toutes les images
         >>> train_cnn()
         # entrainer le modele sur 2000 images, au format (128, 128)
-        >>> train_cnn(nb_image=2000, format=(128, 128))
+        >>> train_cnn(nb_pictures=2000, format=(128, 128))
         # entrainer le modele sur toutes les images et affiché
         # le temps de calcul
         >>> train_cnn(verbose=True)
@@ -211,37 +205,41 @@ def train_cnn(nb_image=0, format=(224, 224), verbose=False):
         print("=========================")
         print("Start")
         tps1 = time.time()
-    if nb_image == 0:
-        liste_images = os.listdir(PATH_DATA_IMAGE)
-    else:
-        liste_images = os.listdir(PATH_DATA_IMAGE)
-        random.shuffle(liste_images)
-        liste_images = liste_images[0:nb_image]
+    list_pictures = os.listdir(fv.PATH_DATA_IMAGE)
+    if nb_pictures != 0:
+        random.shuffle(list_pictures)
+        list_pictures = list_pictures[0:nb_pictures]
     if verbose:
         tps2 = time.time()
-        print(f"FIND exemple: {len(liste_images)}")
-        print(f"temps d'execution: {tps2 - tps1}")
+        print(f"Find exemple: {len(list_pictures)}")
+        print(f"Execution time: {tps2 - tps1}")
         print("=========================")
         print("Start image prep")
         tps1 = time.time()
-    list_images_prep, list_names = MODEL_CNN.changer_format_image_folder(
-        liste_images, format)
+    list_pictures_prep, list_names = MODEL_CNN.changer_format_image_folder(
+        list_pictures, format)
     if verbose:
         tps2 = time.time()
-        print(f"temps d'execution: {tps2 - tps1}")
-        print(f"len of list_image_prep : {len(list_images_prep)}")
-        print(f"shape one image prep : {list_images_prep[0].shape}")
+        print(f"Execution time: {tps2 - tps1}")
+        print(f"Len of list_image_prep : {len(list_pictures_prep)}")
+        print(f"Shape one image prep : {list_pictures_prep[0].shape}")
         print("=========================")
         print("Start Train model")
         tps1 = time.time()
-    MODEL_CNN.train_model(list_images_prep)
+    MODEL_CNN.train_model(list_pictures_prep)
     if verbose:
         tps2 = time.time()
-        print(f"temps d'execution: {tps2 - tps1}")
+        print(f"Execution time: {tps2 - tps1}")
         print("=========================")
 
 
-def vectoriser(name_database="vector.csv", verbose=False):
+def create_dataframe_vector(list_name_picture):
+    img_prep, name = MODEL_CNN.changer_format_image_folder(list_name_picture,
+                                                           (224, 224))
+    return new_list_vecteur_bdd(MODEL_CNN.MODEL, img_prep, [name])
+
+
+def create_database_vectorize(name_database="vector.csv", verbose=False):
     """contruit un dataset vecteur de l'ensemble des images stocker
     dans le dossier data/image avec le modele CNN utilisé dans
     la variable MODEL_CNN et le stocker dans le dossier data/vecteur
@@ -250,77 +248,68 @@ def vectoriser(name_database="vector.csv", verbose=False):
         verbose (bool, optional): [afficher les
         différents étapes réalisé et le temps de calcul]. Defaults to False.
     """
-    liste_images = os.listdir(PATH_DATA_IMAGE)
+    list_pictures = os.listdir(fv.PATH_DATA_IMAGE)
     if verbose:
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
-    img = [liste_images.pop(0)]
-    img_prep, name = MODEL_CNN.changer_format_image_folder(img, (224, 224))
-    df = new_list_vecteur_bdd(MODEL_CNN.MODEL, img_prep, [name])
+    df = create_dataframe_vector([list_pictures.pop(0)])
     index = 0
-    for new_index in range(5000, len(liste_images), 5000):
-        reduce_list_image = liste_images[index:new_index]
-        list_img_prep, list_names = MODEL_CNN.changer_format_image_folder(
-            reduce_list_image, (224, 224))
-        df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL,
-                                                 list_img_prep,
-                                                 list_names)])
+    for new_index in range(5000, len(list_pictures), 5000):
+        reduce_list_image = list_pictures[index:new_index]
+        df = pd.concat([df, create_dataframe_vector(reduce_list_image)])
         index = new_index
         if verbose:
             tps2 = time.time()
             print(f"nombre traité: {new_index}")
-            print(f"temps d'execution: {tps2 - tps1}")
-    reduce_list_image = liste_images[index:]
-    list_img_prep, list_names = MODEL_CNN.changer_format_image_folder(
-        reduce_list_image, (224, 224))
-    df = pd.concat([df, new_list_vecteur_bdd(MODEL_CNN.MODEL, list_img_prep,
-                                             list_names)])
+            print(f"Execution time: {tps2 - tps1}")
+    reduce_list_image = list_pictures[index:]
+    df = pd.concat([df, create_dataframe_vector(reduce_list_image)])
     index = new_index
     if verbose:
         tps2 = time.time()
-        print(f"nombre traité: {len(liste_images)}")
-        print(f"temps d'execution: {tps2 - tps1}")
+        print(f"nombre traité: {len(list_pictures)}")
+        print(f"Execution time: {tps2 - tps1}")
     df = df.iloc[1:]
     if name_database == "vector.csv":
-        save_base_vector(df, PATH_DATA_VECTEUR_FILE)
+        save_base_vector(df, fv.PATH_DATA_VECTOR_FILE)
     else:
-        save_base_vector(df, PATH_DATA_VECTEUR + '/' + name_database)
+        save_base_vector(df, fv.PATH_DATA_VECTOR + name_database)
 
 
 def code_to_name_produit(liste_id):
     return [DF_PRODUIT_TRAIN.loc[id, 'product_name'] for id in liste_id]
 
 
-def test_performance_cnn(nb_images_test=5, verbose=False):
+def test_performance_cnn(nb_picturess_test=5, verbose=False):
     """[summary]
 
     Args:
-        nb_images_test (int, optional): [description]. Defaults to 5.
+        nb_picturess_test (int, optional): [description]. Defaults to 5.
     """
     if verbose:
-        nb_image_fait = 0
+        nb_pictures_fait = 0
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
-    images_a_tester = os.listdir(PATH_DATA_CNN_TEST)
-    liste_images = [PATH_DATA_CNN_TEST+'/'+image for image in images_a_tester]
+    images_a_tester = os.listdir(fv.PATH_DATA_CNN_TEST)
+    list_pictures = [fv.PATH_DATA_CNN_TEST+image for image in images_a_tester]
     images_a_tester = [image.replace('.jpg', '') for image in images_a_tester]
-    table_index = dict([(i, 0) for i in range(nb_images_test)])
+    table_index = dict([(i, 0) for i in range(nb_picturess_test)])
     table_index[-1] = 0
-    for path_image, code_origin_image in zip(liste_images, images_a_tester):
+    for path_picture, code_origin_image in zip(list_pictures, images_a_tester):
         if verbose:
-            if (nb_image_fait % 300) == 0:
+            if (nb_pictures_fait % 300) == 0:
                 tps2 = time.time()
-                print(f"nombre traité: {nb_image_fait}")
-                print(f"temps d'execution: {tps2 - tps1}")
-            nb_image_fait += 1
+                print(f"nombre traité: {nb_pictures_fait}")
+                print(f"Execution time: {tps2 - tps1}")
+            nb_pictures_fait += 1
         try:
-            liste_id = image_to_code(path_image, nb_images_test)
+            liste_id = picture_to_list_code(path_picture, nb_picturess_test)
         except:
             continue
         try:
-            liste_produits = [DF_PRODUIT_TRAIN.loc[id, 'product_name'] for id in liste_id]
+            liste_produits = code_to_name_produit(liste_id)
         except KeyError as e:
             print(f"code produit not found : {e}")
             continue
@@ -329,7 +318,7 @@ def test_performance_cnn(nb_images_test=5, verbose=False):
             table_index[liste_produits.index(nom_du_produit)] += 1
         except ValueError:
             table_index[-1] += 1
-    x = [i for i in range(1, nb_images_test + 2)]
-    y = [table_index[i] for i in range(nb_images_test)]
+    x = [i for i in range(1, nb_picturess_test + 2)]
+    y = [table_index[i] for i in range(nb_picturess_test)]
     y.append(table_index[-1])
     plt.bar(x, y)
