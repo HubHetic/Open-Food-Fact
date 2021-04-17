@@ -9,7 +9,10 @@ from sklearn.neighbors import NearestNeighbors
 # =======================================
 
 
-class class_knn:
+class Class_Knn:
+    """knn class : 
+            our goal here is to implement a knn on our vectorized image        
+    """
 
     def __init__(self, vecteur_image='', nb_voisins=5):
         self.nb_voisins = nb_voisins
@@ -17,6 +20,8 @@ class class_knn:
         self.df_vecteur = ''
 
     def train(self):
+        """function to train our knn on our df of vector
+        """
         df = self.df_vecteur.drop(columns=['code'])
         self.model.fit(df)
 
@@ -37,6 +42,7 @@ class class_knn:
         return [self.df_vecteur.loc[index, 'code'] for index in l_index]
 
     def save_model(self, model):
+        # TODO save dataframe 
         """save in a file the name of the model and the parameters after training
 
         Args:
@@ -44,7 +50,7 @@ class class_knn:
         """
         pass
 
-    def charge_database(self, name_database_vector):
+    def load_knn_df(self, name_database_vector):
         # TODO a faire plus tard pour trouver le chemin de cette database
         self.df_vecteur = pd.read_csv(name_database_vector,  dtype={'code': str})
 
