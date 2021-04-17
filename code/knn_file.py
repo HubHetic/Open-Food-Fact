@@ -10,8 +10,8 @@ from sklearn.neighbors import NearestNeighbors
 
 
 class Class_Knn:
-    """knn class : 
-            our goal here is to implement a knn on our vectorized image        
+    """knn class: 
+            our goal here is to implement a knn on our vectorized image
     """
 
     def __init__(self, vecteur_image='', nb_voisins=5):
@@ -54,7 +54,7 @@ class Class_Knn:
         # TODO a faire plus tard pour trouver le chemin de cette database
         self.df_vecteur = pd.read_csv(name_database_vector,  dtype={'code': str})
 
-    def charge_model(self, name_model=''):
+    def load_model(self, name_model=''):
         """loads the model with these parameters into a file
 
         Args:

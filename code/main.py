@@ -123,9 +123,9 @@ def all_implement(path_picture):
     fv.implement(path_picture)
     global MODEL_CNN, MODEL_KNN
     MODEL_CNN = CNN()
-    MODEL_CNN.charge_model()
+    MODEL_CNN.load_model()
     MODEL_KNN = class_knn()
-    MODEL_KNN.charge_model()
+    MODEL_KNN.load_model()
     print(MODEL_KNN.model)
 
 
@@ -156,9 +156,9 @@ def set_up_model(type_model, name_model):
         >>> set_up_model("CNN", "VGG16")
     """
     if type_model == "KNN":
-        MODEL_KNN.charge_model(name_model=name_model)
+        MODEL_KNN.load_model(name_model=name_model)
     else:
-        MODEL_CNN.charge_model(name_model=name_model)
+        MODEL_CNN.load_model(name_model=name_model)
 
 
 def train_knn(name_database, verbose=False):
@@ -280,7 +280,7 @@ def code_to_name_produit(liste_id):
     return [DF_PRODUIT_TRAIN.loc[id, 'product_name'] for id in liste_id]
 
 
-def test_performance_cnn(nb_picturess_test=5, verbose=False):
+def test_performance_cnn(nb_pictures_test=5, verbose=False):
     """for all then pictures in test, we ll apply knn
         and compt all the occurence where our pictures tested has 
         the same name

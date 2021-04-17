@@ -78,7 +78,7 @@ class CNN():
         model = "CNN"
         return model
 
-    def charge_model(self, name_model=''):
+    def load_model(self, name_model=''):
         """loads the model with these parameters into a file
 
         Args:
