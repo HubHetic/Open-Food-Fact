@@ -281,7 +281,9 @@ def code_to_name_produit(liste_id):
 
 
 def test_performance_cnn(nb_picturess_test=5, verbose=False):
-    """[summary]
+    """for all then pictures in test, we ll apply knn
+        and compt all the occurence where our pictures tested has 
+        the same name
 
     Args:
         - nb_picturess_test (int, optional): [description]. Defaults to 5.
@@ -294,12 +296,12 @@ def test_performance_cnn(nb_picturess_test=5, verbose=False):
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
-    images_a_tester = os.listdir(fv.PATH_DATA_CNN_TEST)
-    list_pictures = [fv.PATH_DATA_CNN_TEST+image for image in images_a_tester]
-    images_a_tester = [image.replace('.jpg', '') for image in images_a_tester]
-    table_index = dict([(i, 0) for i in range(nb_picturess_test)])
+    test_image = os.listdir(fv.PATH_DATA_CNN_TEST)
+    list_pictures = [fv.PATH_DATA_CNN_TEST+image for image in test_image]
+    test_image = [image.replace('.jpg', '') for image in test_image] 
+    table_index = dict([(i, 0) for i in range(nb_pictures_test)])
     table_index[-1] = 0
-    for path_picture, code_origin_image in zip(list_pictures, images_a_tester):
+    for path_picture, code_origin_image in zip(list_pictures, test_image):
         if verbose:
             if (nb_pictures_done % 300) == 0:
                 tps2 = time.time()
@@ -307,7 +309,7 @@ def test_performance_cnn(nb_picturess_test=5, verbose=False):
                 print(f"Execution time: {tps2 - tps1}")
             nb_pictures_done += 1
         try:
-            liste_id = picture_to_list_code(path_picture, nb_picturess_test)
+            liste_id = picture_to_list_code(path_picture, nb_pictures_test)
         except:
             continue
         try:
@@ -315,12 +317,12 @@ def test_performance_cnn(nb_picturess_test=5, verbose=False):
         except KeyError as e:
             print(f"code produit not found : {e}")
             continue
-        nom_du_produit = DF_PRODUIT_TEST.loc[code_origin_image, 'product_name']
+        name_product = DF_PRODUIT_TEST.loc[code_origin_image, 'product_name']
         try:
-            table_index[liste_produits.index(nom_du_produit)] += 1
+            table_index[liste_produits.index(name_product)] += 1
         except ValueError:
             table_index[-1] += 1
-    x = [i for i in range(1, nb_picturess_test + 2)]
-    y = [table_index[i] for i in range(nb_picturess_test)]
+    x = [i for i in range(1, nb_pictures_test + 2)]
+    y = [table_index[i] for i in range(nb_pictures_test)]
     y.append(table_index[-1])
     plt.bar(x, y)
