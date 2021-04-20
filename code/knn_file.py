@@ -1,17 +1,18 @@
 # ========================================
 # IMPORT
 # ========================================
+import pickle
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
+
+
 # =======================================
 # CLASS
 # =======================================
-
-
 class Class_Knn:
-    """knn class: 
-            our goal here is to implement a knn on our vectorized image
+    """knn class:
+            our goal here is to implement a knn on our vectorized images
     """
 
     def __init__(self, vecteur_image='', nb_voisins=5):
@@ -41,20 +42,19 @@ class Class_Knn:
                                         return_distance=False)[0]
         return [self.df_vecteur.loc[index, 'code'] for index in l_index]
 
-    def save_model(self, model):
-        # TODO save dataframe 
+    def save_model(self, model, filename):
         """save in a file the name of the model and the parameters after training
 
         Args:
             model (Object): model object
         """
-        pass
+        pickle.dump(model, open(filename, 'wb'))
 
     def load_knn_df(self, name_database_vector):
         # TODO a faire plus tard pour trouver le chemin de cette database
         self.df_vecteur = pd.read_csv(name_database_vector,  dtype={'code': str})
 
-    def load_model(self, name_model=''):
+    def charge_model(self, name_model=''):
         """loads the model with these parameters into a file
 
         Args:
@@ -63,4 +63,7 @@ class Class_Knn:
         Returns:
             Object: model object
         """
-        self.model = NearestNeighbors(n_neighbors=5)
+        if name_model == '':
+            self.model = NearestNeighbors(n_neighbors=5)
+        else:
+            self.model = pickle.load(open(name_model, 'rb'))

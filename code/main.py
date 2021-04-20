@@ -276,19 +276,20 @@ def create_database_vectorize(name_database="vector.csv", verbose=False):
         save_base_vector(df, fv.PATH_DATA_VECTOR + name_database)
 
 
-def code_to_name_produit(liste_id):
-    return [DF_PRODUIT_TRAIN.loc[id, 'product_name'] for id in liste_id]
+def code_to_name_product(liste_id, label):
+    return [DF_PRODUIT_TRAIN.loc[id, label] for id in liste_id]
 
 
-def test_performance_cnn(nb_pictures_test=5, verbose=False):
+def performance_test_cnn(nb_pictures_test=5, label='product_name',
+                         verbose=False):
     """for all then pictures in test, we ll apply knn
-        and compt all the occurence where our pictures tested has 
+        and compt all the occurence where our pictures tested has
         the same name
 
     Args:
         - nb_picturess_test (int, optional): [description]. Defaults to 5.
-        - verbose (bool, optional): [afficher les différents étapes
-        réalisé et le temps de calcul]. Defaults to False.
+        - verbose (bool, optional): [display the different steps
+        performed and the calculation time]. Defaults to False.
 
     """
     if verbose:
@@ -298,7 +299,7 @@ def test_performance_cnn(nb_pictures_test=5, verbose=False):
         tps1 = time.time()
     test_image = os.listdir(fv.PATH_DATA_CNN_TEST)
     list_pictures = [fv.PATH_DATA_CNN_TEST+image for image in test_image]
-    test_image = [image.replace('.jpg', '') for image in test_image] 
+    test_image = [image.replace('.jpg', '') for image in test_image]
     table_index = dict([(i, 0) for i in range(nb_pictures_test)])
     table_index[-1] = 0
     for path_picture, code_origin_image in zip(list_pictures, test_image):
@@ -313,11 +314,11 @@ def test_performance_cnn(nb_pictures_test=5, verbose=False):
         except:
             continue
         try:
-            liste_produits = code_to_name_produit(liste_id)
+            liste_produits = code_to_name_product(liste_id, label)
         except KeyError as e:
-            print(f"code produit not found : {e}")
+            print(f"code product not found : {e}")
             continue
-        name_product = DF_PRODUIT_TEST.loc[code_origin_image, 'product_name']
+        name_product = DF_PRODUIT_TEST.loc[code_origin_image, label]
         try:
             table_index[liste_produits.index(name_product)] += 1
         except ValueError:
