@@ -31,7 +31,7 @@ DF_PRODUIT_TEST = DF_PRODUIT_TEST.set_index('code')
 # ===========================================
 
 
-def picture_to_pictures(path_picture, nb_pictures):
+def picture_to_pictures(path_picture, nb_pictures, size):
     """return the list of paths of nb_pictures similar to the image stored
     in the image path
 
@@ -42,11 +42,11 @@ def picture_to_pictures(path_picture, nb_pictures):
     Returns:
         list(str): list of image file paths
     """
-    list_id = picture_to_list_code(path_picture, nb_pictures)
+    list_id = picture_to_list_code(path_picture, nb_pictures, size)
     return [MODEL_CNN.find_image(code) for code in list_id]
 
 
-def picture_to_list_code(path_picture, nb_pictures):
+def picture_to_list_code(path_picture, nb_pictures, size):
     """return the ids nb_pictures similar to the image
     stored in the path_picture
 
@@ -57,7 +57,7 @@ def picture_to_list_code(path_picture, nb_pictures):
     Returns:
         list(str): list of id similar images
     """
-    vec = MODEL_CNN.image_to_vector(path_picture)
+    vec = MODEL_CNN.image_to_vector(path_picture, size)
     return MODEL_KNN.find_similar_vector_id(vec, nb_pictures)
 
 
@@ -84,7 +84,7 @@ def show_image(path_picture, nb_pictures, size=(224, 224)):
     axes[0].legend("picture test")
     axes[1].imshow(vector2)
     axes[1].legend("picture of similar product picture test")
-    list_image_found = picture_to_pictures(path_picture, nb_pictures)
+    list_image_found = picture_to_pictures(path_picture, nb_pictures, size)
     fig2, axes = plt.subplots(1, nb_pictures, figsize=(2 * nb_pictures, 2))
     for img, ax in zip(list_image_found, axes):
         vector = MODEL_CNN.changer_format(img, size)[0]
@@ -140,7 +140,7 @@ def choice_vector_database(name_database):
         display_data_vector_available
     """
     path = fv.PATH_DATA_VECTOR + name_database
-    MODEL_KNN.charge_database(path)
+    MODEL_KNN.load_knn_df(path)
 
 
 def set_up_model(type_model, name_model):
@@ -299,7 +299,7 @@ def performance_test_cnn(nb_pictures_test=15, label='product_name',
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
-    test_image = os.listdir(fv.PATH_DATA_CNN_TEST)
+    test_image = os.listdir(fv.PATH_DATA_CNN_TEST)[:100]
     list_pictures = [fv.PATH_DATA_CNN_TEST+image for image in test_image]
     test_image = [image.replace('.jpg', '') for image in test_image]
     table_index = dict([(i, 0) for i in range(nb_pictures_test)])
@@ -312,7 +312,7 @@ def performance_test_cnn(nb_pictures_test=15, label='product_name',
                 print(f"Execution time: {tps2 - tps1}")
             nb_pictures_done += 1
         try:
-            liste_id = picture_to_list_code(path_picture, nb_pictures_test)
+            liste_id = picture_to_list_code(path_picture, nb_pictures_test, size)
         except:
             continue
         try:

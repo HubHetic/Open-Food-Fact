@@ -49,7 +49,7 @@ class CNN():
         img_prep = self.fonction_preprpocessing(img)
         return img_prep
 
-    def image_to_vector(self, path_image):
+    def image_to_vector(self, path_image, size):
         """ Converts the image parameters into a vector.
 
         Args:
@@ -58,8 +58,8 @@ class CNN():
         Returns:
             numpy Array: vector corresponding to the last layer of the CNN
         """
-        format = (224, 224)
-        image = self.changer_format(path_image, format)
+
+        image = self.changer_format(path_image, size)
         func = function_last_layers(self.MODEL)
         vector = image_vector_CNN(func, image)
         return vector
