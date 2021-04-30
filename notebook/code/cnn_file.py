@@ -5,7 +5,8 @@ import numpy as np
 from tensorflow.keras.preprocessing import image
 from keras.applications.vgg16 import VGG16
 from keras.applications import MobileNet
-from tensorflow.keras.applications import EfficientNetB5
+from tensorflow.keras.applications import EfficientNetB3
+from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.applications.vgg16 import preprocess_input as prepro_vg116
 from tensorflow.keras.applications.efficientnet import preprocess_input as prepro_efficient_net
 from keras.applications.mobilenet import preprocess_input as prepro_mobile_net
@@ -19,14 +20,15 @@ from db_vector import function_last_layers, image_vector_CNN
 class CNN():
     def __init__(self):
         self.MODEL = ''
-        self.name_model = ('VGG16', "mobile_net", "efficient_net")
+        self.name_model = ('VGG16', "mobile_net", "efficient_net",
+                           "efficient_netB3")
         self.fonction_preprocessing = ''
 
 # =======================================
 # FONCTION DE CLASSE
 # =======================================
 
-    def changer_format(self, path_image, format):
+    def changer_format(self, path_image, size):
         """ Change the image format in path_image and preprocess it for the CNN.
 
         Args:
@@ -43,10 +45,10 @@ class CNN():
             >>> img_prep.shape
                 (1, 224, 224, 3)
         """
-        img = image.load_img(path_image, color_mode='rgb', target_size=format)
+        img = image.load_img(path_image, color_mode='rgb', target_size=size)
         img = image.img_to_array(img)
         img = np.expand_dims(img, axis=0)
-        img_prep = self.fonction_preprpocessing(img)
+        img_prep = self.fonction_preprocessing(img)
         return img_prep
 
     def image_to_vector(self, path_image, size):
@@ -80,13 +82,16 @@ class CNN():
                     self.MODEL = MobileNet()
                     self.fonction_preprocessing = prepro_mobile_net
                 elif name_model == "efficient_net":
-                    self.MODEL = EfficientNetB5()
+                    self.MODEL = EfficientNetB0()
+                    self.fonction_preprocessing = prepro_efficient_net
+                elif name_model == "efficient_netB3":
+                    self.MODEL = EfficientNetB3()
                     self.fonction_preprocessing = prepro_efficient_net
             else:
                 raise(Exception(f"name_model not found in {self.name_model}"))
         else:
             self.MODEL = VGG16(weights='imagenet')
-            self.fonction_preprpocessing = prepro_efficient_net
+            self.fonction_preprocessing = prepro_efficient_net
 
     def find_image(self, code_image):
         """ Return the path of the image which name is code_image.

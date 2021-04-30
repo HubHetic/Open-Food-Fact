@@ -283,7 +283,7 @@ def code_to_name_product(liste_id, label):
 
 
 def performance_test_cnn(nb_pictures_test=15, label='product_name',
-                         verbose=False):
+                         verbose=False, size=(224, 224)):
     """for all then pictures in test, we ll apply knn
         and compt all the occurence where our pictures tested has
         the same name
@@ -299,7 +299,7 @@ def performance_test_cnn(nb_pictures_test=15, label='product_name',
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
-    test_image = os.listdir(fv.PATH_DATA_CNN_TEST)[:100]
+    test_image = os.listdir(fv.PATH_DATA_CNN_TEST)[:600]
     list_pictures = [fv.PATH_DATA_CNN_TEST+image for image in test_image]
     test_image = [image.replace('.jpg', '') for image in test_image]
     table_index = dict([(i, 0) for i in range(nb_pictures_test)])
@@ -311,12 +311,15 @@ def performance_test_cnn(nb_pictures_test=15, label='product_name',
                 print(f"number processed: {nb_pictures_done}")
                 print(f"Execution time: {tps2 - tps1}")
             nb_pictures_done += 1
+
         try:
-            liste_id = picture_to_list_code(path_picture, nb_pictures_test, size)
+            liste_id = picture_to_list_code(path_picture, nb_pictures_test,
+                                            size)
         except:
             continue
         try:
             liste_produits = code_to_name_product(liste_id, label)
+
         except KeyError as e:
             print(f"code product not found : {e}")
             continue
@@ -325,15 +328,15 @@ def performance_test_cnn(nb_pictures_test=15, label='product_name',
             table_index[liste_produits.index(name_product)] += 1
         except ValueError:
             table_index[-1] += 1
-    x = [i for i in range(1, nb_pictures_test + 2)]
+    x = [i for i in range(1, nb_pictures_test + 1)]
     len_test = len(test_image)
     for i in range(1, nb_pictures_test):
         table_index[i] += table_index[i - 1]
-    y = [table_index[i] / len_test for i in range(nb_pictures_test)]
+    y = [(table_index[i] / len_test) * 100 for i in range(nb_pictures_test)]
     fig = plt.figure()
-    ax = fig.add_axes([0, 0, 1, 1])
+    ax = fig.add_subplot(1, 1, 1)
     ax.bar(x, y)
-    grid_x_ticks = np.arange(0, nb_pictures_test, 0.2)
+    grid_x_ticks = np.arange(0, 25, 0.2)
     grid_y_ticks = np.arange(0, 5, 0.2)
     ax.set_xticks(grid_x_ticks, minor=True)
     ax.set_yticks(grid_y_ticks, minor=True)
@@ -341,6 +344,5 @@ def performance_test_cnn(nb_pictures_test=15, label='product_name',
     ax.grid(which='both')
     ax.grid(which='minor', alpha=0.2, linestyle='--')
     ax.set_ylabel('percentage')
-    ax.set_title('percentage image find by ' + label + 'with '
+    ax.set_title('percentage image find by ' + label + ' with '
                  + str(nb_pictures_test))
-    plt.bar(x, y)
