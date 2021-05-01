@@ -13,7 +13,7 @@ from cnn_file import CNN
 from knn_file import ClassKnn
 from db_vector import new_list_vector_bdd
 from db_vector import save_base_vector
-
+from tensorflow.keras.preprocessing import image
 
 # ===========================================
 # VARIABLE GLOBALE
@@ -75,11 +75,12 @@ def show_image(path_picture, nb_pictures, size=(224, 224)):
         - nb_pictures (int): number of similar images to be displayed
     """
     print("=============================")
-    vector = MODEL_CNN.changer_format(path_picture, size)[0]
     code = path_picture.split("/")[-1].replace(".jpg", "")
     path_picture_train = find_path_sim_picture_to_code(code)
-    vector2 = MODEL_CNN.changer_format(path_picture_train, size)[0]
     fig, axes = plt.subplots(1, 2, figsize=(4, 2))
+    vector2 = image.load_img(path_picture_train, color_mode='rgb',
+                             target_size=size)
+    vector = image.load_img(path_picture, color_mode='rgb', target_size=size)
     axes[0].imshow(vector)
     axes[0].legend("picture test")
     axes[1].imshow(vector2)
@@ -87,7 +88,7 @@ def show_image(path_picture, nb_pictures, size=(224, 224)):
     list_image_found = picture_to_pictures(path_picture, nb_pictures, size)
     fig2, axes = plt.subplots(1, nb_pictures, figsize=(2 * nb_pictures, 2))
     for img, ax in zip(list_image_found, axes):
-        vector = MODEL_CNN.changer_format(img, size)[0]
+        vector = image.load_img(img, color_mode='rgb', target_size=(224, 224))
         ax.imshow(vector)
         ax.axis('off')
     fig2.legend("find pitcture with algo")
@@ -157,7 +158,7 @@ def set_up_model(type_model, name_model):
         >>> set_up_model("CNN", "VGG16")
     """
     if type_model == "KNN":
-        MODEL_KNN.load_model(name_model=name_model)
+        MODEL_KNN.charge_model(name_model=name_model)
     else:
         MODEL_CNN.load_model(name_model=name_model)
 
@@ -237,6 +238,7 @@ def create_dataframe_vector(list_name_picture, size):
     return new_list_vector_bdd(MODEL_CNN.MODEL, img_prep, name)
 
 
+
 def create_database_vectorize(name_database="vector.csv", verbose=False,
                               size=(224, 224)):
     """constructs a vector dataset of all the images stored in the data/image
@@ -249,7 +251,6 @@ def create_database_vectorize(name_database="vector.csv", verbose=False,
         - verbose (bool, optional): [Display the different steps performed
         and the calculation time]. Defaults to False.
     """
-    
     list_pictures = os.listdir(fv.PATH_DATA_IMAGE)
     if verbose:
         tps1 = time.time()
