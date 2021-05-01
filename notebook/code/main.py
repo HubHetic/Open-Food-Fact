@@ -234,7 +234,7 @@ def train_cnn(nb_pictures=0, size=(224, 224), verbose=False):
 def create_dataframe_vector(list_name_picture, size):
     img_prep, name = MODEL_CNN.changer_format_image_folder(list_name_picture,
                                                            size)
-    return new_list_vector_bdd(MODEL_CNN.MODEL, img_prep, [name])
+    return new_list_vector_bdd(MODEL_CNN.MODEL, img_prep, name)
 
 
 def create_database_vectorize(name_database="vector.csv", verbose=False,
@@ -249,10 +249,9 @@ def create_database_vectorize(name_database="vector.csv", verbose=False,
         - verbose (bool, optional): [Display the different steps performed
         and the calculation time]. Defaults to False.
     """
+    
     list_pictures = os.listdir(fv.PATH_DATA_IMAGE)
     if verbose:
-        print("=========================")
-        print("Start create new dataset")
         tps1 = time.time()
     df = create_dataframe_vector([list_pictures.pop(0)], size)
     index = 0
@@ -299,7 +298,7 @@ def performance_test_cnn(nb_pictures_test=15, label='product_name',
         print("=========================")
         print("Start create new dataset")
         tps1 = time.time()
-    test_image = os.listdir(fv.PATH_DATA_CNN_TEST)[:600]
+    test_image = os.listdir(fv.PATH_DATA_CNN_TEST)
     list_pictures = [fv.PATH_DATA_CNN_TEST+image for image in test_image]
     test_image = [image.replace('.jpg', '') for image in test_image]
     table_index = dict([(i, 0) for i in range(nb_pictures_test)])
@@ -336,7 +335,7 @@ def performance_test_cnn(nb_pictures_test=15, label='product_name',
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     ax.bar(x, y)
-    grid_x_ticks = np.arange(0, 25, 0.2)
+    grid_x_ticks = np.arange(0, nb_pictures_test, 0.2)
     grid_y_ticks = np.arange(0, 5, 0.2)
     ax.set_xticks(grid_x_ticks, minor=True)
     ax.set_yticks(grid_y_ticks, minor=True)
