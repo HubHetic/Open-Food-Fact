@@ -1,3 +1,7 @@
-"# Open-Food-Fact"  
-"https://drive.google.com/file/d/1K4xYfbW5gmC0tifLmQdKYgodYJjW-zlR/view?usp=sharing"
-"lien du drive concernant la data nécessaire, les urls d'image pour aws"
+# Image Embedding for Open-Food-Fact
+Using efficientnet, mobileNet to provide embeddings for retrieval. Read the blog post at https://hub-hetic-innovation-pole.medium.com/open-food-fact-image-search-df108f792989
+
+# Workflow
+
+
+# File
