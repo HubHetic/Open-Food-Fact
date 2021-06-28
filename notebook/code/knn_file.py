@@ -40,8 +40,6 @@ class ClassKnn:
         vecteur = np.array(vecteur).reshape(1, -1)
         l_index = self.model.kneighbors(vecteur, n_neighbors=nb_id,
                                         return_distance=False)[0]
-
-
         return [self.df_vecteur.loc[index, 'code'] for index in l_index]
 
     def save_model(self, model, filename):

@@ -238,7 +238,6 @@ def create_dataframe_vector(list_name_picture, size):
     return new_list_vector_bdd(MODEL_CNN.MODEL, img_prep, name)
 
 
-
 def create_database_vectorize(name_database="vector.csv", verbose=False,
                               size=(224, 224)):
     """constructs a vector dataset of all the images stored in the data/image
