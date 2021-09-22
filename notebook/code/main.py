@@ -18,8 +18,11 @@ from tensorflow.keras.preprocessing import image
 # ===========================================
 # VARIABLE GLOBALE
 # ===========================================
-MODEL_CNN = ''
-MODEL_KNN = ''
+MODEL_CNN = CNN()
+MODEL_CNN.load_model()
+MODEL_KNN = ClassKnn()
+MODEL_KNN.charge_model()
+print(MODEL_KNN.model)
 
 DF_PRODUIT_TRAIN = pd.read_csv(fv.PATH_DATA_TRAIN)[['code', 'product_name']]
 DF_PRODUIT_TRAIN = DF_PRODUIT_TRAIN.set_index('code')
@@ -77,20 +80,23 @@ def show_image(path_picture, nb_pictures, size=(224, 224)):
     print("=============================")
     code = path_picture.split("/")[-1].replace(".jpg", "")
     path_picture_train = find_path_sim_picture_to_code(code)
-    fig, axes = plt.subplots(1, 2, figsize=(4, 2))
+    name_product = DF_PRODUIT_TEST.loc[code, "product_name"]
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4))
     vector2 = image.load_img(path_picture_train, color_mode='rgb',
                              target_size=size)
     vector = image.load_img(path_picture, color_mode='rgb', target_size=size)
     axes[0].imshow(vector)
-    axes[0].legend("picture test")
+    axes[0].set_xlabel(name_product)
     axes[1].imshow(vector2)
-    axes[1].legend("picture of similar product picture test")
+    axes[1].set_xlabel(name_product)
     list_image_found = picture_to_pictures(path_picture, nb_pictures, size)
-    fig2, axes = plt.subplots(1, nb_pictures, figsize=(2 * nb_pictures, 2))
-    for img, ax in zip(list_image_found, axes):
+    liste_id = picture_to_list_code(path_picture, nb_pictures, size)
+    liste_produits = code_to_name_product(liste_id, "product_name")
+    fig2, axes = plt.subplots(1, nb_pictures, figsize=(4 * nb_pictures, 4))
+    for img, ax, name_product in zip(list_image_found, axes, liste_produits):
         vector = image.load_img(img, color_mode='rgb', target_size=(224, 224))
         ax.imshow(vector)
-        ax.axis('off')
+        ax.set_xlabel(name_product)
     fig2.legend("find pitcture with algo")
 
 
@@ -101,34 +107,6 @@ def display_data_vector_available():
         [string]: list of different names
     """
     return os.listdir(fv.PATH_DATA_VECTOR)
-
-
-def all_implement(path_picture):
-    """implement the different folders necessary to deploy the project,
-    move the images from the path_picture to the data/image folder to
-    be able to test them. instantiate the MODEL_CNN and MODEL_KNN classes
-
-    - the MODEL_CNN instance allows to choose the model to transform the
-    image into a vector as well as the different training and performance
-    test functions.
-
-    - the instance MODEL_KNN allows to choose the model to select the similar
-    images.
-
-    if you have already put the images in the folder data/image/ put only
-    '' for the path_picture
-
-    Args:
-        path_picture (string): absolute path of the folder containing the
-        images to be moved to the data/image folder
-    """
-    fv.implement(path_picture)
-    global MODEL_CNN, MODEL_KNN
-    MODEL_CNN = CNN()
-    MODEL_CNN.load_model()
-    MODEL_KNN = ClassKnn()
-    MODEL_KNN.charge_model()
-    print(MODEL_KNN.model)
 
 
 def choice_vector_database(name_database):
@@ -236,7 +214,6 @@ def create_dataframe_vector(list_name_picture, size):
     img_prep, name = MODEL_CNN.changer_format_image_folder(list_name_picture,
                                                            size)
     return new_list_vector_bdd(MODEL_CNN.MODEL, img_prep, name)
-
 
 
 def create_database_vectorize(name_database="vector.csv", verbose=False,

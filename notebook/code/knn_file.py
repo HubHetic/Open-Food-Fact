@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
-
+from file_variable import PATH_DATA_KNN
 
 # =======================================
 # CLASS
@@ -40,8 +40,6 @@ class ClassKnn:
         vecteur = np.array(vecteur).reshape(1, -1)
         l_index = self.model.kneighbors(vecteur, n_neighbors=nb_id,
                                         return_distance=False)[0]
-
-
         return [self.df_vecteur.loc[index, 'code'] for index in l_index]
 
     def save_model(self, model, filename):
@@ -50,7 +48,7 @@ class ClassKnn:
         Args:
             model (Object): model object
         """
-        pickle.dump(model, open(filename, 'wb'))
+        pickle.dump(model, open(PATH_DATA_KNN + filename, 'wb'))
 
     def load_knn_df(self, name_database_vector):
         self.df_vecteur = pd.read_csv(name_database_vector,
@@ -68,4 +66,4 @@ class ClassKnn:
         if name_model == '':
             self.model = NearestNeighbors(n_neighbors=5)
         else:
-            self.model = pickle.load(open(name_model, 'rb'))
+            self.model = pickle.load(open(PATH_DATA_KNN + name_model, 'rb'))
