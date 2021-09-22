@@ -10,7 +10,7 @@ from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.applications.vgg16 import preprocess_input as prepro_vg116
 from tensorflow.keras.applications.efficientnet import preprocess_input as prepro_efficient_net
 from keras.applications.mobilenet import preprocess_input as prepro_mobile_net
-from file_variable import PATH_DATA_IMAGE
+from file_variable import PATH_DATA_CNN_TRAIN
 from db_vector import function_last_layers, image_vector_CNN
 # =======================================
 # DEPENDANCE
@@ -102,7 +102,7 @@ class CNN():
         Returns:
             string: path of the image stored in data/image
         """
-        path_image = PATH_DATA_IMAGE + code_image + '.jpg'
+        path_image = PATH_DATA_CNN_TRAIN + code_image + '.jpg'
         return path_image
 
     def changer_format_image_folder(self, list_image, format):
@@ -118,7 +118,7 @@ class CNN():
         """
         liste_img_prep = []
         for img in list_image:
-            path = PATH_DATA_IMAGE + img
+            path = PATH_DATA_CNN_TRAIN + img
             try:
                 liste_img_prep.append(self.changer_format(path, format))
             except:

@@ -5,11 +5,12 @@ def df_nan(df, spe_colonne=True):
     """
     """
     line_with_nan = df.isna().apply(lambda x: 1 if sum(x) > 0 else 0, axis=1)
-    print(f"Nombre de lignes avec nan: {line_with_nan.sum()}")
+    print(f"Nombre de lignes avec nan: {line_with_nan.sum()} - {line_with_nan.sum()/df.shape[0] * 100}")
     if line_with_nan.sum():
         colonne_with_nan = df.isna().apply(lambda x: 1 if sum(x) > 0 else 0,
                                            axis=0)
-        print(f"Nombre de colonnes avec Nan: {colonne_with_nan.sum()}")
+        print(f"Nombre de colonnes avec Nan: {colonne_with_nan.sum()}"
+              f" - {colonne_with_nan.sum()/df.shape[1] * 100}")
         if spe_colonne and line_with_nan.sum():
             print("Colonnes avec des Nan et leur nombre:")
             print(df.isnull().sum().nlargest(sum(df.isnull().any())))
