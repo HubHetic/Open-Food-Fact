@@ -3,6 +3,5 @@ Using efficientnet, mobileNet to provide embeddings for retrieval. Read the blog
 
 # Workflow
 
-golum seigneur des anneaux
-
+anis adore les sucettes
 # File
